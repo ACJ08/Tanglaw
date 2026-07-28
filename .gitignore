@@ -1,0 +1,36 @@
+# dependencies
+node_modules/
+
+# production
+dist/
+build/
+
+# environment variables
+.env
+.env.local
+.env.development.local
+.env.production.local
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# editor
+.vscode/
+.idea/
+
+# operating system
+.DS_Store
+Thumbs.db
+
+# cache
+.cache/
+.eslintcache
+
+# misc
+coverage/
+
+
+.supabase/

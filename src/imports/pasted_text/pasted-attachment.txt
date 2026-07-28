@@ -1,0 +1,582 @@
+# Prompt
+
+Act as a **Senior Frontend Engineer, Senior UI/UX Designer, Product Designer, Design Systems Architect, Visual Designer, Human-Computer Interaction (HCI) Expert, Accessibility Specialist, Motion Designer, and CSS/Tailwind Expert** with over **15 years of experience** designing enterprise SaaS platforms, AI-powered dashboards, analytics systems, and modern web applications.
+
+Your goal is to create a **premium, production-ready frontend** that rivals products from **Stripe, Linear, Notion, Vercel, Figma, GitHub, Microsoft, Framer, and Apple**. Every design decision should prioritize **clarity, usability, accessibility, responsiveness, consistency, scalability, and visual polish**.
+
+The Light Mode should **not** be treated as a simple inversion of Dark Mode. Instead, it must be designed as a **complete, standalone visual system** with its own carefully crafted design language while remaining consistent with the application's branding.
+
+The overall result should feel like a commercial-grade SaaS product that is ready for deployment and user testing.
+
+---
+
+# Overall Frontend Design Principles
+
+The application should emphasize:
+
+* Modern minimalism
+* Professional enterprise aesthetics
+* Excellent readability
+* Clear visual hierarchy
+* Consistent spacing
+* Clean typography
+* High accessibility
+* Responsive layouts
+* Smooth animations
+* Premium interactions
+* Micro-interactions
+* Elegant transitions
+* Performance-first rendering
+* Pixel-perfect alignment
+* Reusable components
+* Design system consistency
+
+Every page should feel cohesive and professionally designed rather than a collection of independent screens.
+
+---
+
+# Light Mode Design Philosophy
+
+The Light Mode should provide a completely different visual experience from Dark Mode while maintaining feature parity.
+
+The design should feel:
+
+* Bright
+* Elegant
+* Premium
+* Spacious
+* Modern
+* Professional
+* Intelligent
+* Minimalistic
+* AI-first
+* Enterprise-grade
+
+Avoid flat and boring interfaces.
+
+Instead, create depth through:
+
+* subtle shadows
+* elevation
+* layered cards
+* gradients
+* whitespace
+* visual grouping
+* proper spacing
+* modern rounded corners
+* glassmorphism where appropriate
+* soft borders
+* tasteful animations
+
+The interface should never feel cluttered.
+
+---
+
+# Official Light Mode Color System
+
+Use the following colors as the official design system.
+
+## Primary Color — Navy Blue
+
+Use Navy as the application's strongest branding color.
+
+Apply to:
+
+* Navigation
+* Sidebars
+* Active menu items
+* Primary buttons
+* Hyperlinks
+* Icons
+* Dashboard statistics
+* Graphs
+* Progress indicators
+* AI modules
+* Important actions
+
+Navy should communicate trust, professionalism, and intelligence.
+
+---
+
+## Secondary Color — Gold
+
+Gold represents emphasis and premium interactions.
+
+Use for:
+
+* CTA buttons
+* Hover states
+* Active states
+* Premium badges
+* Success highlights
+* Important metrics
+* Charts
+* Highlights
+* Focus indicators
+* Achievement cards
+
+Gold should be elegant rather than overly saturated.
+
+---
+
+## Supporting Accent — Magenta
+
+Magenta represents innovation and AI.
+
+Use carefully for:
+
+* AI-generated content
+* Interactive widgets
+* Recommendations
+* Notifications
+* Smart suggestions
+* Selected cards
+* Dashboard highlights
+* AI analytics
+* Interactive controls
+
+Magenta should never overpower the interface.
+
+---
+
+# Background System
+
+Instead of using plain white everywhere, create visual depth.
+
+Suggested hierarchy:
+
+Primary Background
+
+* Soft White
+
+Secondary Background
+
+* Very Light Gray
+
+Cards
+
+* Pure White
+
+Sections
+
+* Slightly elevated backgrounds
+
+Containers
+
+* Soft borders
+
+Dashboard Panels
+
+* Layered appearance
+
+Avoid large empty white areas by using subtle contrast between sections.
+
+---
+
+# Typography
+
+Typography should automatically adapt when switching to Light Mode.
+
+Update:
+
+* Headings
+* Subheadings
+* Paragraphs
+* Navigation
+* Sidebar
+* Tables
+* Buttons
+* Inputs
+* Cards
+* Labels
+* Badges
+* Dashboard metrics
+* AI responses
+* Analytics
+* Charts
+* Footer
+
+Typography hierarchy should be obvious.
+
+Suggested hierarchy:
+
+H1
+
+Large
+
+Bold
+
+Navy
+
+H2
+
+Dark Navy
+
+Semi-bold
+
+H3
+
+Medium Weight
+
+Body
+
+Dark Gray
+
+Captions
+
+Medium Gray
+
+Muted Text
+
+Gray
+
+Disabled
+
+Light Gray
+
+Maintain excellent readability.
+
+Ensure all typography satisfies WCAG AA accessibility standards.
+
+---
+
+# Buttons
+
+Every button should be redesigned specifically for Light Mode.
+
+Primary Buttons
+
+* Navy background
+* White text
+* Smooth shadows
+* Gold hover state
+* Slight scaling animation
+* Smooth transitions
+
+Secondary Buttons
+
+* White background
+* Navy border
+* Navy text
+* Gold hover border
+* Elevated hover effect
+
+Accent Buttons
+
+* Gold background
+* Navy text
+* Premium appearance
+* Interactive animation
+
+AI Buttons
+
+* Navy + Magenta combination
+* Modern gradients
+* AI-inspired appearance
+
+Buttons should include:
+
+* Hover animations
+* Press animations
+* Loading states
+* Disabled states
+* Success states
+* Error states
+* Ripple or scale effects where appropriate
+
+---
+
+# Navigation
+
+Completely redesign navigation for Light Mode.
+
+Include:
+
+Sidebar
+
+Top Navigation
+
+Breadcrumbs
+
+Dropdowns
+
+User Profile
+
+Notifications
+
+Search
+
+Workspace Switcher
+
+Navigation should include:
+
+* Elegant spacing
+* Clear active indicators
+* Smooth hover transitions
+* Rounded active pills
+* Modern icons
+* Soft shadows
+* Sticky navigation where appropriate
+
+---
+
+# Cards
+
+Cards should become the primary layout building block.
+
+Every card should have:
+
+* Soft shadows
+* Rounded corners
+* Consistent spacing
+* Hover elevation
+* Smooth transitions
+* Proper padding
+* Visual hierarchy
+
+Cards should never feel flat.
+
+Different card types should exist:
+
+* Statistic Cards
+* AI Cards
+* Dashboard Cards
+* Report Cards
+* Insight Cards
+* Analytics Cards
+* User Cards
+* Activity Cards
+
+---
+
+# Forms
+
+Every form should feel polished.
+
+Update:
+
+* Inputs
+* Search bars
+* Dropdowns
+* Select menus
+* Date pickers
+* Toggles
+* Sliders
+* Checkboxes
+* Radio buttons
+* Textareas
+
+Interactions should include:
+
+* Focus animation
+* Border transitions
+* Gold focus glow
+* Error validation
+* Success validation
+* Placeholder animations
+
+---
+
+# Tables
+
+Redesign tables to feel modern.
+
+Include:
+
+* Sticky headers
+* Rounded corners
+* Hover rows
+* Sort animations
+* Search integration
+* Pagination
+* Filters
+* Status chips
+* Colored indicators
+
+Alternating rows should improve readability.
+
+---
+
+# Charts & Analytics
+
+Every visualization should feel premium.
+
+Support:
+
+* Bar charts
+* Pie charts
+* Line charts
+* Area charts
+* Heatmaps
+* Radar charts
+* KPI cards
+* Progress charts
+
+Suggested palette:
+
+* Navy
+* Gold
+* Magenta
+* Emerald
+* Teal
+* Purple
+* Coral
+
+Charts should use:
+
+* Interactive tooltips
+* Hover effects
+* Smooth animations
+* Responsive resizing
+* Accessible legends
+* Readable gridlines
+
+---
+
+# Icons
+
+Icons should adapt to Light Mode.
+
+Use:
+
+* Navy
+* Gold
+* Magenta
+* Gray
+
+Icons should have consistent sizing, spacing, and stroke widths.
+
+---
+
+# Motion Design
+
+Introduce tasteful animations throughout the application.
+
+Examples:
+
+* Fade in
+* Slide in
+* Scale
+* Floating cards
+* Hover lift
+* Button ripple
+* Page transitions
+* Modal transitions
+* Toast animations
+* Sidebar expansion
+* Drawer transitions
+* Skeleton loading
+* Animated counters
+* Progress animations
+* Chart animations
+
+Animations should be subtle, performant, and purposeful.
+
+---
+
+# Responsive Design
+
+The interface must be fully responsive across:
+
+* Desktop
+* Laptop
+* Tablet
+* Mobile
+
+Support:
+
+* Flexible grids
+* Adaptive layouts
+* Responsive typography
+* Mobile navigation
+* Touch-friendly controls
+* Responsive cards
+* Responsive charts
+
+Nothing should overflow or break at any viewport.
+
+---
+
+# Accessibility
+
+Follow WCAG AA (or higher) standards.
+
+Ensure:
+
+* Proper contrast ratios
+* Keyboard navigation
+* Screen reader compatibility
+* Visible focus indicators
+* Semantic HTML
+* Accessible forms
+* Accessible modals
+* Accessible tables
+* Accessible charts
+
+Accessibility must never be sacrificed for aesthetics.
+
+---
+
+# Theme Consistency
+
+When switching between Dark Mode and Light Mode, every component must transition seamlessly.
+
+Update all:
+
+* Fonts
+* Buttons
+* Icons
+* Cards
+* Charts
+* Navigation
+* Forms
+* Modals
+* Tables
+* AI components
+* Landing page
+* Footer
+* Dashboard widgets
+* Analytics
+* Reports
+* Notifications
+* Tooltips
+* Accordions
+* Tabs
+* Badges
+* Pagination
+* Empty states
+* Error pages
+* Loading screens
+* Skeleton loaders
+
+No component should retain Dark Mode colors while Light Mode is active.
+
+Theme switching should include smooth animated transitions without flickering or layout shifts.
+
+---
+
+# Design System Consistency
+
+Create a scalable design system with reusable design tokens for:
+
+* Colors
+* Typography
+* Border radius
+* Shadows
+* Elevation
+* Grid spacing
+* Component sizing
+* Icons
+* Motion
+* Breakpoints
+* Z-index layers
+* Opacity levels
+* Focus states
+
+Every UI component should derive its styling from these centralized design tokens to ensure long-term maintainability and consistency.
+
+---
+
+# Expected Final Result
+
+The final Light Mode should feel like a **flagship enterprise AI platform**—beautiful, intuitive, and meticulously crafted. It should not resemble a basic color swap from Dark Mode, but rather a thoughtfully designed experience with its own identity. Every element—from typography and navigation to buttons, forms, analytics, animations, and interactions—should embody a cohesive visual language centered around **Navy, Gold, and Magenta**, delivering a polished, modern, accessible, and production-ready interface that matches the quality of industry-leading SaaS applications.

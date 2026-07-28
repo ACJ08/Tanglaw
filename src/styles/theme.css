@@ -1,0 +1,311 @@
+@custom-variant dark (&:is(.dark *));
+
+/* ── Tanglaw dual-theme tokens (swapped via data-theme on <html>) ─────────── */
+/* Default = Light Mode (first-time visitor experience)                         */
+/* Light Mode: warm cream/ivory palette — "Tanglaw" as a beacon of light        */
+:root,
+[data-theme="light"] {
+  /* Page & surfaces — warm cream / soft ivory inspired by sunlight */
+  --tng-page: #FEFAF2;
+  --tng-page-2: #FAF5E8;
+  --tng-nav: rgba(254, 250, 242, 0.97);
+  --tng-nav-border: #E8DFC8;
+  --tng-surface: #FFFEFA;
+  --tng-surface-2: #FBF7EE;
+  --tng-elevated: #FFFEFA;
+  --tng-card: #FFFEFA;
+
+  /* Borders — warm-toned to match cream palette */
+  --tng-border: #E2D9C4;
+  --tng-border-soft: #EDE6D3;
+  --tng-border-strong: #C8BB9A;
+
+  /* Typography — deep navy hierarchy for maximum readability on warm cream */
+  --tng-text-1: #0F1E38;
+  --tng-text-2: #1E3A6E;
+  --tng-text-3: #4A6491;
+  --tng-text-4: #7A8FA8;
+  --tng-text-5: #A8B6C4;
+
+  /* Civic Red — for emphasis, urgency, and important highlights */
+  --tng-red: #C91C3A;
+  --tng-red-soft: rgba(201, 28, 58, 0.10);
+
+  /* Accessible Gold text — #F5B800 fails on cream; use dark amber instead */
+  /* #8B6800 on #FEFAF2 ≈ 5.2:1 contrast — WCAG AA compliant */
+  --tng-gold-text: #8B6800;
+
+  /* Section label color — used for small uppercase tracking labels */
+  --tng-label-gold: #9A7200;
+
+  /* Shadows — warm-tinted elevation using navy-amber base */
+  --tng-shadow-xs: 0 1px 2px rgba(30, 20, 8, 0.07), 0 0 0 1px rgba(30, 20, 8, 0.04);
+  --tng-shadow-sm: 0 2px 6px rgba(30, 20, 8, 0.09), 0 0 0 1px rgba(30, 20, 8, 0.04);
+  --tng-shadow-md: 0 4px 16px rgba(30, 20, 8, 0.11), 0 1px 4px rgba(30, 20, 8, 0.06);
+  --tng-shadow-lg: 0 8px 32px rgba(30, 20, 8, 0.13), 0 2px 8px rgba(30, 20, 8, 0.07);
+  --tng-shadow-xl: 0 16px 48px rgba(30, 20, 8, 0.15), 0 4px 12px rgba(30, 20, 8, 0.09);
+  --tng-shadow-gold: 0 4px 20px rgba(245, 184, 0, 0.30), 0 1px 4px rgba(245, 184, 0, 0.18);
+  --tng-shadow-navy: 0 4px 20px rgba(27, 47, 110, 0.20), 0 1px 4px rgba(27, 47, 110, 0.10);
+
+  /* Section backgrounds — warm gold and cream alternation */
+  --tng-section-alt: rgba(245, 184, 0, 0.06);
+  --tng-section-navy: rgba(27, 47, 110, 0.04);
+  --tng-section-gold: rgba(245, 184, 0, 0.09);
+  --tng-section-cream: rgba(255, 248, 220, 0.70);
+
+  /* Atmospheric blobs — warm gold sunlight tones */
+  --tng-blob-1: rgba(245, 184, 0, 0.12);
+  --tng-blob-2: rgba(201, 28, 58, 0.06);
+  --tng-blob-3: rgba(27, 47, 110, 0.07);
+
+  /* Marquee — matches warm page */
+  --tng-marquee-fade: #FEFAF2;
+
+  /* Inputs — warm white with gold focus */
+  --tng-input-bg: #FFFEFA;
+  --tng-input-border: #D4C9A8;
+  --tng-input-focus: rgba(245, 184, 0, 0.40);
+
+  /* Primary (navy) button */
+  --tng-btn-primary-bg: #1B2F6E;
+  --tng-btn-primary-hover: #243D8A;
+  --tng-btn-primary-text: #FFFFFF;
+}
+
+[data-theme="dark"] {
+  /* Gold text stays bright gold in dark mode — full #F5B800 */
+  --tng-gold-text: #F5B800;
+  --tng-label-gold: #F5B800;
+  --tng-red: #D4187E;
+  --tng-red-soft: rgba(212, 24, 126, 0.15);
+  --tng-page: #050E24;
+  --tng-nav: rgba(5, 14, 36, 0.94);
+  --tng-nav-border: rgba(255, 255, 255, 0.10);
+  --tng-surface: rgba(255, 255, 255, 0.04);
+  --tng-surface-2: rgba(255, 255, 255, 0.06);
+  --tng-elevated: #0C1A3A;
+  --tng-border: rgba(255, 255, 255, 0.10);
+  --tng-border-soft: rgba(255, 255, 255, 0.08);
+  --tng-text-1: #FFFFFF;
+  --tng-text-2: rgba(147, 197, 253, 0.65);
+  --tng-text-3: rgba(147, 197, 253, 0.45);
+  --tng-text-4: rgba(147, 197, 253, 0.30);
+  --tng-blob-1: rgba(27, 47, 110, 0.60);
+  --tng-blob-2: rgba(212, 24, 126, 0.25);
+  --tng-blob-3: rgba(245, 184, 0, 0.15);
+  --tng-marquee-fade: #050E24;
+  --tng-input-bg: rgba(255, 255, 255, 0.06);
+  --tng-input-border: rgba(255, 255, 255, 0.12);
+  --tng-section-alt: rgba(12, 26, 58, 0.40);
+}
+
+/* ── Shimmer animation for "Digital Confidence" hero phrase ───────────────── */
+@keyframes tng-shimmer {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ── Utility classes for theme tokens ─────────────────────────────────────── */
+@layer utilities {
+  .tng-text-1 { color: var(--tng-text-1); }
+  .tng-text-2 { color: var(--tng-text-2); }
+  .tng-text-3 { color: var(--tng-text-3); }
+  .tng-text-4 { color: var(--tng-text-4); }
+  .tng-surface { background: var(--tng-surface); }
+  .tng-surface-2 { background: var(--tng-surface-2); }
+  .tng-elevated { background: var(--tng-elevated); }
+  .tng-card { background: var(--tng-card, var(--tng-elevated)); box-shadow: var(--tng-shadow-sm, none); }
+  .tng-border { border-color: var(--tng-border); }
+  .tng-border-soft { border-color: var(--tng-border-soft); }
+  .tng-page { background: var(--tng-page); }
+  .tng-input { background: var(--tng-input-bg); border-color: var(--tng-input-border); }
+  .tng-shadow-xs { box-shadow: var(--tng-shadow-xs, none); }
+  .tng-shadow-sm { box-shadow: var(--tng-shadow-sm, none); }
+  .tng-shadow-md { box-shadow: var(--tng-shadow-md, none); }
+  .tng-shadow-lg { box-shadow: var(--tng-shadow-lg, none); }
+  .tng-shadow-xl { box-shadow: var(--tng-shadow-xl, none); }
+  /* Accessible gold text — auto-adjusts for contrast on both themes */
+  .tng-gold-text { color: var(--tng-gold-text); }
+  .tng-label-gold { color: var(--tng-label-gold); }
+}
+
+:root {
+  --font-size: 16px;
+  --background: #050E24;
+  --foreground: #F0F4FF;
+  --card: #0C1A3A;
+  --card-foreground: #F0F4FF;
+  --popover: #0C1A3A;
+  --popover-foreground: #F0F4FF;
+  --primary: #F5B800;
+  --primary-foreground: #050E24;
+  --secondary: #1B2F6E;
+  --secondary-foreground: #F0F4FF;
+  --muted: #112047;
+  --muted-foreground: #8899BB;
+  --accent: #D4187E;
+  --accent-foreground: #ffffff;
+  --destructive: #d4183d;
+  --destructive-foreground: #ffffff;
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.08);
+  --input-background: rgba(255, 255, 255, 0.06);
+  --switch-background: #1B2F6E;
+  --font-weight-medium: 600;
+  --font-weight-normal: 400;
+  --ring: #F5B800;
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: #030213;
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.145 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.145 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.985 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --border: oklch(0.269 0 0);
+  --input: oklch(0.269 0 0);
+  --ring: oklch(0.439 0 0);
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.269 0 0);
+  --sidebar-ring: oklch(0.439 0 0);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /**
+  * Default typography styles for HTML elements (h1-h4, p, label, button, input).
+  * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.
+  */
+
+  html {
+    font-size: var(--font-size);
+  }
+
+  h1 {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h2 {
+    font-size: var(--text-xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h3 {
+    font-size: var(--text-lg);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h4 {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  label {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  button {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  input {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-normal);
+    line-height: 1.5;
+  }
+}
