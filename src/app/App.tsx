@@ -1,3 +1,4 @@
+import { supabase } from '../supabaseClient';
 import { useState, useEffect, useRef } from "react";
 import { BrowserRouter, Routes, Route, Link, useNavigate } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
@@ -86,15 +87,50 @@ const roles = [
 ];
 
 function SignUpModal() {
-  const { modalOpen, closeModal, signIn } = useAuth();
+  const { modalOpen, closeModal, signIn, signUp } = useAuth(); // Keep signIn for the login toggle if needed later
   const { isDark } = useTheme();
   const navigate = useNavigate();
   const [selectedRole, setSelectedRole] = useState("");
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "" });
+  const [isLoading, setIsLoading] = useState(false);
+  const [authError, setAuthError] = useState("");
 
-  const handleClose = () => { setStep(1); setSelectedRole(""); closeModal(); };
-  const handleJoin = () => { signIn(selectedRole, form.name || "User"); navigate("/dashboard"); };
+  const handleClose = () => { 
+    setStep(1); 
+    setSelectedRole(""); 
+    setAuthError("");
+    closeModal(); 
+  };
+
+  const handleJoin = () => {
+      setIsLoading(true);
+      setAuthError("");
+
+      if (form.password !== form.confirm) {
+        setAuthError("Passwords do not match");
+        setIsLoading(false);
+        return;
+      }
+
+      // Notice: NO 'await' keyword here. We use .then() instead.
+      signUp(form.email, form.password, {
+        data: {
+          full_name: form.name || "User",
+          role: selectedRole,
+        }
+      }).then(({ success, error }) => {
+        
+        setIsLoading(false);
+
+        if (error) {
+          setAuthError(error.message);
+        } else if (success) {
+          handleClose();
+        }
+        
+      });
+    };
 
   const modalBg = isDark ? "bg-[#0C1A3A] border-white/15" : "bg-white border-slate-200";
   const inputCls = isDark
@@ -134,6 +170,14 @@ function SignUpModal() {
               </div>
             </div>
             <div className="px-8 py-6 max-h-[68vh] overflow-y-auto">
+              
+              {/* Error Message Display */}
+              {authError && (
+                <div className="mb-4 p-3 rounded-lg bg-red-100 border border-red-200 text-red-600 text-sm font-semibold">
+                  {authError}
+                </div>
+              )}
+
               {step === 1 ? (
                 <div className="flex flex-col gap-4">
                   <p className={`text-sm ${subCls}`}>Free forever. No credit card required.</p>
@@ -152,7 +196,8 @@ function SignUpModal() {
                     </div>
                   ))}
                   <button onClick={() => setStep(2)}
-                    className="mt-2 w-full py-3.5 rounded-xl font-bold text-[#050E24] bg-gradient-to-r from-[#F5B800] to-[#FFD44D] hover:shadow-lg hover:shadow-[#F5B800]/25 transition-all text-sm">
+                    disabled={!form.email || !form.password}
+                    className="mt-2 w-full py-3.5 rounded-xl font-bold text-[#050E24] bg-gradient-to-r from-[#F5B800] to-[#FFD44D] hover:shadow-lg hover:shadow-[#F5B800]/25 transition-all text-sm disabled:opacity-50">
                     Continue →
                   </button>
                   <p className={`text-center text-xs ${subCls}`}>
@@ -194,9 +239,9 @@ function SignUpModal() {
                       );
                     })()}
                   </AnimatePresence>
-                  <button onClick={handleJoin} disabled={!selectedRole}
-                    className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all ${selectedRole ? "text-[#050E24] bg-gradient-to-r from-[#F5B800] to-[#FFD44D] hover:shadow-lg" : isDark ? "text-blue-200/30 bg-white/5 cursor-not-allowed" : "text-slate-300 bg-slate-100 cursor-not-allowed"}`}>
-                    {selectedRole ? `Join as ${roles.find(r => r.id === selectedRole)?.title} →` : "Select a role to continue"}
+                  <button onClick={handleJoin} disabled={!selectedRole || isLoading}
+                    className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all ${selectedRole ? "text-[#050E24] bg-gradient-to-r from-[#F5B800] to-[#FFD44D] hover:shadow-lg" : isDark ? "text-blue-200/30 bg-white/5 cursor-not-allowed" : "text-slate-300 bg-slate-100 cursor-not-allowed"} ${isLoading ? "opacity-75 cursor-wait" : ""}`}>
+                    {isLoading ? "Creating account..." : selectedRole ? `Join as ${roles.find(r => r.id === selectedRole)?.title} →` : "Select a role to continue"}
                   </button>
                 </div>
               )}
@@ -206,7 +251,7 @@ function SignUpModal() {
       )}
     </AnimatePresence>
   );
-}
+};
 
 // ─── Hero ─────────────────────────────────────────────────────────────────────
 
