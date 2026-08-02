@@ -8,12 +8,15 @@ import {
   Volume2, Accessibility, BarChart2, Clock,
   Lock, Radio, FileCheck, Layers,
   Github, Twitter, Facebook, Youtube, Instagram,
-  Search, Fingerprint, MessageSquare,
+  Search, Fingerprint, MessageSquare, Mail, Linkedin,
 } from "lucide-react";
 import { ImageWithFallback } from "@/app/components/figma/ImageWithFallback";
 import { AuthProvider, useAuth } from "@/app/context/AuthContext";
 import { ThemeProvider, useTheme } from "@/app/context/ThemeContext";
 import { Navbar } from "@/app/components/Layout";
+import { AuthModal } from "@/app/components/AuthModal";
+import { ProtectedRoute } from "@/app/components/ProtectedRoute";
+import { VerificationEntryButton } from "@/app/components/VerificationEntryButton";
 
 import logoImg from "@/imports/logo.png";
 import tanglawTextImg from "@/imports/tanglaw_text.png";
@@ -28,6 +31,9 @@ import mapImg from "@/imports/8__map.png";
 import appreciationImg from "@/imports/9__Appreciation.png";
 import offlineModeImg from "@/imports/10__Offline_Mode.png";
 import successImg from "@/imports/11__Success.png";
+import jacobPortrait from "@/imports/team/jacob.jpg";
+import raphPortrait from "@/imports/team/raph.jpg";
+import carolPortrait from "@/imports/team/carol.jpg";
 
 import VerifyPage from "@/app/pages/VerifyPage";
 import CrisisPage from "@/app/pages/CrisisPage";
@@ -39,6 +45,7 @@ import OfflinePage from "@/app/pages/OfflinePage";
 import SyncPage from "@/app/pages/SyncPage";
 import ProfilePage from "@/app/pages/ProfilePage";
 import AccessibilityPage from "@/app/pages/AccessibilityPage";
+import AuthCallbackPage from "@/app/pages/AuthCallbackPage";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -86,6 +93,7 @@ const roles = [
   { id: "humanitarian", icon: "🌐", title: "Humanitarian Partner", for: "Disaster response orgs, emergency responders", features: ["Crisis Verification", "Emergency Advisories", "Community Monitoring"] },
 ];
 
+// Superseded by AuthModal. This legacy declaration is not rendered.
 function SignUpModal() {
   const { modalOpen, closeModal, signIn, signUp } = useAuth(); // Keep signIn for the login toggle if needed later
   const { isDark } = useTheme();
@@ -421,11 +429,9 @@ function Hero() {
                 style={{ boxShadow: !isDark ? "var(--tng-shadow-navy)" : undefined }}>
                 Get Started Free <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
               </button>
-              <Link to="/verify"
+              <VerificationEntryButton
                 className={`group flex items-center gap-2 px-6 py-3 rounded-full font-bold transition-all duration-300 hover:-translate-y-0.5 text-sm ${isDark ? "text-white border border-white/20 bg-white/5 backdrop-blur hover:bg-white/10" : "text-[#0F1E38] bg-gradient-to-r from-[#F5B800] via-[#FBCF2C] to-[#F0A500] hover:from-[#F0A500] hover:to-[#F5B800]"}`}
-                style={!isDark ? { boxShadow: "0 4px 20px rgba(245,184,0,0.35), 0 1px 4px rgba(245,184,0,0.20)" } : undefined}>
-                Try Verification <Search size={14} className="group-hover:scale-110 transition-transform duration-200" />
-              </Link>
+                style={!isDark ? { boxShadow: "0 4px 20px rgba(245,184,0,0.35), 0 1px 4px rgba(245,184,0,0.20)" } : undefined} />
             </motion.div>
 
             <motion.div variants={fadeUp} className="flex flex-col gap-2 w-full max-w-xs">
@@ -898,6 +904,92 @@ const ecosystem = [
   { icon: Accessibility, label: "Accessibility", desc: "Voice guidance, large icons, simple language — designed for everyone.", color: "#D4187E" },
 ];
 
+const tanglawPrinciples = [
+  ["T", "Trustworthy Verification", Shield],
+  ["A", "Accessible Offline Platform", WifiOff],
+  ["N", "Networked Community Sharing", Users],
+  ["G", "Guided Media Literacy", BookOpen],
+  ["L", "Local Threat Ledger", Layers],
+  ["A", "Adaptive Synchronization", Radio],
+  ["W", "Without Internet", Globe],
+] as const;
+
+function WhyTanglaw() {
+  const { ref, inView } = useInView(0.12);
+  const { isDark } = useTheme();
+  return (
+    <section id="why-tanglaw" className="relative overflow-hidden py-24">
+      <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(135deg, var(--tng-section-alt), transparent 55%, rgba(245,184,0,0.09))" }} />
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <motion.div ref={ref} variants={stagger} initial="hidden" animate={inView ? "show" : "hidden"}>
+          <motion.div variants={fadeUp} className="mx-auto max-w-3xl text-center">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-[#D4187E]">Why Tanglaw</p>
+            <h2 className="text-3xl font-extrabold sm:text-4xl" style={{ color: "var(--tng-text-1)" }}>Why the name <em className="not-italic" style={{ color: "var(--tng-gold-text)" }}>“Tanglaw”?</em></h2>
+            <p className="mt-5 text-base leading-relaxed" style={{ color: "var(--tng-text-2)" }}><strong style={{ color: "var(--tng-text-1)" }}>Tanglaw</strong> is a Filipino word meaning light, guiding light, or beacon—something that illuminates the truth and helps communities navigate misinformation.</p>
+          </motion.div>
+          <motion.div variants={fadeUp} className={`mx-auto mt-10 max-w-5xl rounded-3xl border p-6 sm:p-9 ${isDark ? "border-white/12 bg-white/5" : "border-[#E2D9C4] bg-white/80"}`} style={{ boxShadow: !isDark ? "var(--tng-shadow-lg)" : undefined }}>
+            <p className="mb-6 text-center text-xs font-bold tracking-[0.35em]" style={{ color: "var(--tng-gold-text)" }}>T.A.N.G.L.A.W.</p>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {tanglawPrinciples.map(([letter, meaning, Icon], index) => <motion.div key={`${letter}-${meaning}`} variants={fadeUp} whileHover={{ y: -5, scale: 1.01 }} className={`group rounded-2xl border p-4 transition-colors ${isDark ? "border-white/10 bg-[#081631]/60 hover:border-[#F5B800]/45" : "border-slate-200 bg-[#FFFEFA] hover:border-[#F5B800]/60"}`}>
+                <div className="mb-3 flex items-center justify-between"><span className="text-3xl font-extrabold" style={{ color: index % 2 ? "#D4187E" : "#F5B800" }}>{letter}</span><Icon size={18} className="text-[#1B2F6E] opacity-60 transition-transform group-hover:scale-110" /></div>
+                <p className="text-xs font-bold leading-relaxed" style={{ color: "var(--tng-text-1)" }}>{meaning}</p>
+              </motion.div>)}
+            </div>
+            <p className="mx-auto mt-8 max-w-3xl text-center text-sm leading-relaxed" style={{ color: "var(--tng-text-2)" }}>Tanglaw brings trustworthy information to every community—even where connectivity is limited. Community-driven verification, offline-first technology, and media literacy work together as a beacon of truth where reliable information is needed most.</p>
+          </motion.div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+const team = [
+  { name: "Carl Jacob Mateo", role: "Backend Developer & Database Developer", initials: "CJ", portrait: jacobPortrait, bio: "Designs scalable backend systems, API architecture, database optimization, authentication workflows, and reliable data synchronization across Tanglaw.", email: "carljacob.mateo@gmail.com", network: "LinkedIn", href: "https://www.linkedin.com/in/carl-jacob-mateo-367b41256/", Icon: Linkedin },
+  { name: "Raphiel Anne Roslin", role: "Graphic Designer", initials: "RA", portrait: raphPortrait, bio: "Shapes Tanglaw’s visual identity, branding, illustrations, and user-centered graphics so information is clear, welcoming, and effective.", email: "raphielanneroslin@gmail.com", network: "Facebook", href: "https://www.facebook.com/share/18tTazaDbv/?mibextid=wwXIfr", Icon: Facebook },
+  { name: "Anne Carol G. Jonson", role: "Frontend Developer · Backend Developer · AI Integration Engineer · Researcher", initials: "AC", portrait: carolPortrait, bio: "Leads Tanglaw’s frontend experience, backend integration, AI-powered verification workflows, and research to deliver a seamless, intelligent platform.", email: "annecaroljonson1108@gmail.com", network: "LinkedIn", href: "https://www.linkedin.com/in/annecaroljonson/", Icon: Linkedin },
+];
+
+function TeamProfileImage({ src, name, initials }: { src: string; name: string; initials: string }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) return <div role="img" aria-label={`Portrait of ${name} unavailable`} className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-[#F5B800] via-[#F3A52A] to-[#D4187E] text-sm font-extrabold text-[#050E24]">{initials}</div>;
+  return <img src={src} alt={`Portrait of ${name}`} loading="lazy" decoding="async" onError={() => setFailed(true)} className="h-16 w-16 shrink-0 rounded-2xl border-2 border-white/70 object-cover object-top shadow-sm transition-transform duration-300 group-hover:scale-105" />;
+}
+
+function AboutSection() {
+  const { ref, inView } = useInView(0.1);
+  const { isDark } = useTheme();
+  const emailStyle = isDark ? "border-[#FB7185]/45 bg-[#FB7185]/15 text-[#FDA4AF] hover:bg-[#FB7185]/25 hover:shadow-[0_8px_20px_rgba(251,113,133,0.2)]" : "border-[#FDA4AF]/65 bg-[#FFF1F2] text-[#BE123C] hover:bg-[#FFE4E6] hover:shadow-[0_8px_20px_rgba(190,24,93,0.15)]";
+  const socialStyle = (network: string) => isDark
+    ? network === "LinkedIn" ? "border-[#60A5FA]/45 bg-[#3B82F6]/15 text-[#93C5FD] hover:bg-[#3B82F6]/25 hover:shadow-[0_8px_20px_rgba(96,165,250,0.2)]" : "border-[#60A5FA]/45 bg-[#2563EB]/15 text-[#93C5FD] hover:bg-[#2563EB]/25 hover:shadow-[0_8px_20px_rgba(96,165,250,0.2)]"
+    : network === "LinkedIn" ? "border-[#93C5FD] bg-[#EFF6FF] text-[#1D4ED8] hover:bg-[#DBEAFE] hover:shadow-[0_8px_20px_rgba(37,99,235,0.14)]" : "border-[#93C5FD] bg-[#EFF6FF] text-[#1D4ED8] hover:bg-[#DBEAFE] hover:shadow-[0_8px_20px_rgba(37,99,235,0.14)]";
+  const controlBase = "grid h-10 w-10 place-items-center rounded-xl border transition-all duration-200 hover:-translate-y-0.5 hover:scale-105 active:translate-y-0 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5B800] focus-visible:ring-offset-2";
+
+  return <section id="about" className="relative overflow-hidden py-24">
+    <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(circle at 90% 10%, rgba(212,24,126,0.1), transparent 30%)" }} />
+    <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <motion.div ref={ref} variants={stagger} initial="hidden" animate={inView ? "show" : "hidden"}>
+        <motion.div variants={fadeUp} className="mx-auto max-w-3xl text-center">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-[#D4187E]">About Tanglaw</p>
+          <h2 className="text-3xl font-extrabold sm:text-4xl" style={{ color: "var(--tng-text-1)" }}>Technology with a community <em className="not-italic" style={{ color: "var(--tng-gold-text)" }}>at its heart</em></h2>
+          <p className="mt-5 text-sm leading-relaxed sm:text-base" style={{ color: "var(--tng-text-2)" }}>Tanglaw is an offline-first community verification platform built to combat misinformation through trustworthy verification, media literacy, and resilient technology. Our interdisciplinary team combines software engineering, artificial intelligence, user experience, and visual communication.</p>
+        </motion.div>
+        <motion.div variants={fadeUp} className="mt-14 flex items-end justify-between gap-6"><h3 className="text-2xl font-extrabold" style={{ color: "var(--tng-text-1)" }}>Meet the team</h3><span className="hidden text-xs font-semibold sm:block" style={{ color: "var(--tng-text-3)" }}>Building clarity, together</span></motion.div>
+        <div className="mt-6 grid gap-5 lg:grid-cols-3">
+          {team.map(({ Icon, ...member }) => <motion.article key={member.name} variants={fadeUp} whileHover={{ y: -7 }} className={`group flex flex-col rounded-3xl border p-6 transition-shadow ${isDark ? "border-white/10 bg-white/5 hover:border-white/20" : "border-slate-200 bg-white hover:shadow-xl"}`} style={{ boxShadow: !isDark ? "var(--tng-shadow-sm)" : undefined }}>
+            <div className="mb-5 flex items-center gap-4"><TeamProfileImage src={member.portrait} name={member.name} initials={member.initials} /><div><h4 className="font-bold" style={{ color: "var(--tng-text-1)" }}>{member.name}</h4><p className="mt-1 text-[11px] font-semibold leading-relaxed text-[#D4187E]">{member.role}</p></div></div>
+            <p className="text-sm leading-relaxed" style={{ color: "var(--tng-text-2)" }}>{member.bio}</p>
+            <div className="mt-6 flex items-center gap-2 border-t pt-5" style={{ borderColor: "var(--tng-border)" }}>
+              <a href={`mailto:${member.email}`} title="Send Email" aria-label={`Send email to ${member.name}`} className={`${controlBase} ${emailStyle}`}><Mail size={17} strokeWidth={2.25} /></a>
+              <a href={member.href} target="_blank" rel="noreferrer" title={`Open ${member.network}`} aria-label={`${member.name} on ${member.network}`} className={`${controlBase} ${socialStyle(member.network)}`}><Icon size={17} strokeWidth={2.25} /></a>
+              <a href={`mailto:${member.email}`} aria-label={`Send email to ${member.name}`} className={`ml-auto rounded-lg px-2 py-2 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5B800] ${isDark ? "text-[#FDE68A] hover:bg-[#F5B800]/10" : "text-[#1B2F6E] hover:bg-[#FFF8DC] hover:text-[#BE123C]"}`}>Send email</a>
+            </div>
+          </motion.article>)}
+        </div>
+      </motion.div>
+    </div>
+  </section>;
+}
+
 function EcosystemSection() {
   const { ref, inView } = useInView(0.1);
   const { isDark } = useTheme();
@@ -944,7 +1036,7 @@ function PersonasSection() {
   const { ref, inView } = useInView(0.1);
   const { isDark } = useTheme();
   return (
-    <section className="py-24 relative overflow-hidden">
+    <section id="community-impact" className="py-24 relative overflow-hidden">
       <div className="absolute inset-0 pointer-events-none" style={{ background: `linear-gradient(to bottom, var(--tng-section-alt), transparent)` }} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div ref={ref} variants={stagger} initial="hidden" animate={inView ? "show" : "hidden"}>
@@ -1380,12 +1472,14 @@ function LandingPage() {
       <FeatureMarquee />
       <FeatureShowcase />
       <HowItWorks />
+      <WhyTanglaw />
       <EcosystemSection />
       <PersonasSection />
       <WhoIsItFor />
       <SafetySection />
       <AccessibilitySection />
       <FAQ />
+      <AboutSection />
       <CTASection />
       <Footer />
     </div>
@@ -1401,18 +1495,19 @@ function AppInner() {
       <Navbar />
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/verify" element={<VerifyPage />} />
-        <Route path="/learn" element={<LearnPage />} />
+        <Route path="/auth/callback" element={<AuthCallbackPage />} />
+        <Route path="/verify" element={<ProtectedRoute><VerifyPage /></ProtectedRoute>} />
+        <Route path="/learn" element={<ProtectedRoute><LearnPage /></ProtectedRoute>} />
         <Route path="/truth-hubs" element={<TruthHubPage />} />
-        <Route path="/community" element={<CommunityPage />} />
-        <Route path="/crisis" element={<CrisisPage />} />
-        <Route path="/offline" element={<OfflinePage />} />
-        <Route path="/sync" element={<SyncPage />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/community" element={<ProtectedRoute roles={["official", "ngo", "humanitarian"]}><CommunityPage /></ProtectedRoute>} />
+        <Route path="/crisis" element={<ProtectedRoute roles={["official", "humanitarian"]}><CrisisPage /></ProtectedRoute>} />
+        <Route path="/offline" element={<ProtectedRoute><OfflinePage /></ProtectedRoute>} />
+        <Route path="/sync" element={<ProtectedRoute><SyncPage /></ProtectedRoute>} />
+        <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
         <Route path="/accessibility" element={<AccessibilityPage />} />
       </Routes>
-      <SignUpModal />
+      <AuthModal />
     </div>
   );
 }

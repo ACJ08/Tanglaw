@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import {
   User, Mail, Lock, Globe, Bell, Eye, EyeOff, CheckCircle,
@@ -29,13 +29,13 @@ const languages = ["Filipino (Tagalog)", "English", "Taglish", "Cebuano", "Iloca
 
 export default function ProfilePage() {
   const { isDark } = useTheme();
-  const { userName, userRole } = useAuth();
+  const { userName, userRole, profile } = useAuth();
   const roleLabel = roleLabelMap[userRole ?? ""] ?? userRole ?? "Community Member";
 
   const [editMode, setEditMode] = useState(false);
   const [form, setForm] = useState({
     name: userName || "Juan dela Cruz",
-    email: "juan@email.com",
+    email: profile?.email || "",
     location: "Barangay Makiling, Laguna",
     language: "Filipino (Tagalog)",
     bio: "Community member using Tanglaw to protect my family from online scams.",
@@ -50,6 +50,12 @@ export default function ProfilePage() {
     syncStatus: true,
     weeklyDigest: true,
   });
+
+  useEffect(() => {
+    if (!editMode) {
+      setForm(current => ({ ...current, name: userName || "", email: profile?.email || "" }));
+    }
+  }, [editMode, profile?.email, userName]);
 
   const handleSave = () => {
     setSaved(true);

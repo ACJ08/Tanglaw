@@ -1,390 +1,87 @@
-import { useState, useEffect, ReactNode } from "react";
-import { Link, useNavigate, useLocation } from "react-router";
-import { motion, AnimatePresence } from "motion/react";
-import {
-  Menu, X, ChevronDown, Shield, WifiOff, BookOpen, MapPin,
-  Users, Radio, LayoutDashboard, LogOut, User, Database,
-  Network, Bell, Accessibility, Sun, Moon,
-} from "lucide-react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { Link, useLocation, useNavigate } from "react-router";
+import { AnimatePresence, motion } from "motion/react";
+import { Bell, BookOpen, ChevronLeft, ChevronRight, Database, LayoutDashboard, LogOut, MapPin, Menu, Moon, Network, Radio, Settings, Shield, Sun, User, Users, X } from "lucide-react";
 import { ImageWithFallback } from "@/app/components/figma/ImageWithFallback";
 import { useAuth } from "@/app/context/AuthContext";
 import { useTheme } from "@/app/context/ThemeContext";
 import logoImg from "@/imports/logo.png";
 import tanglawTextImg from "@/imports/tanglaw_text.png";
 
-// ─── Public nav links ─────────────────────────────────────────────────────────
+type Role = "citizen" | "student" | "official" | "teacher" | "ngo" | "humanitarian";
+type NavItem = { label: string; href: string; icon: typeof Shield; roles?: Role[] };
+type NavSection = { label: string; items: NavItem[] };
 
-const publicLinks = [
-  { label: "Home", href: "/#home" },
-  { label: "Features", href: "/#features" },
-  { label: "How It Works", href: "/#workflow" },
-  { label: "Truth Hubs", href: "/truth-hubs" },
-  { label: "Accessibility", href: "/#accessibility" },
-  { label: "FAQ", href: "/#faq" },
+const roleLabel: Record<string, string> = { citizen: "Community Member", student: "Student Advocate", official: "Barangay Official", teacher: "Educator", ngo: "NGO Partner", humanitarian: "Humanitarian Partner" };
+const navigation: NavSection[] = [
+  { label: "Main", items: [{ label: "Dashboard", href: "/dashboard", icon: LayoutDashboard }, { label: "Verify", href: "/verify", icon: Shield }, { label: "Learn", href: "/learn", icon: BookOpen }] },
+  { label: "Community", items: [{ label: "Truth Hubs", href: "/truth-hubs", icon: MapPin }, { label: "Community", href: "/community", icon: Users, roles: ["official", "ngo", "humanitarian"] }] },
+  { label: "Intelligence", items: [{ label: "Threat Ledger", href: "/offline", icon: Database }, { label: "Offline Sync", href: "/sync", icon: Network }, { label: "Crisis Mode", href: "/crisis", icon: Radio, roles: ["official", "humanitarian"] }] },
+  { label: "Account", items: [{ label: "Profile", href: "/profile", icon: User }, { label: "Settings", href: "/accessibility", icon: Settings }] },
 ];
-
-// ─── App nav links ────────────────────────────────────────────────────────────
-
-const appLinks = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Verify", href: "/verify", icon: Shield },
-  { label: "Learn", href: "/learn", icon: BookOpen },
-  { label: "Truth Hubs", href: "/truth-hubs", icon: MapPin },
-  { label: "Community", href: "/community", icon: Users },
-  { label: "Threat Ledger", href: "/offline", icon: Database },
-  { label: "Offline Sync", href: "/sync", icon: Network },
-  { label: "Crisis Mode", href: "/crisis", icon: Radio },
-];
-
-const roleLabelMap: Record<string, string> = {
-  citizen: "Community Member",
-  student: "Student Advocate",
-  official: "Barangay Official",
-  teacher: "Educator",
-  ngo: "NGO Partner",
-  humanitarian: "Humanitarian Partner",
-};
-
-// ─── Smooth scroll nav hook ───────────────────────────────────────────────────
-
-function useSmoothNav() {
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  return (href: string) => {
-    if (href.startsWith("/#")) {
-      const id = href.slice(2);
-      if (location.pathname === "/") {
-        document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-      } else {
-        navigate("/");
-        setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }), 180);
-      }
-    } else {
-      navigate(href);
-    }
-  };
-}
-
-// ─── Theme Toggle ─────────────────────────────────────────────────────────────
 
 function ThemeToggle() {
   const { isDark, toggleTheme } = useTheme();
-  return (
-    <button
-      onClick={toggleTheme}
-      aria-label={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
-      className={`w-9 h-9 rounded-xl border flex items-center justify-center transition-all duration-200 ${
-        isDark
-          ? "border-white/15 text-blue-200/70 hover:text-white hover:bg-white/8 hover:border-white/25"
-          : "border-slate-200 text-[#1B2F6E] bg-white hover:bg-[#F5B800]/10 hover:border-[#F5B800]/50 hover:text-[#1B2F6E]"
-      }`}
-      style={{ boxShadow: !isDark ? "var(--tng-shadow-xs)" : undefined }}>
-      {isDark ? <Sun size={16} /> : <Moon size={16} />}
-    </button>
-  );
+  return <button onClick={toggleTheme} aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"} className={`grid h-9 w-9 place-items-center rounded-xl border transition-colors ${isDark ? "border-white/15 text-blue-100 hover:bg-white/10" : "border-slate-200 bg-white text-[#1B2F6E] hover:bg-[#FFF8DC]"}`}>{isDark ? <Sun size={16} /> : <Moon size={16} />}</button>;
 }
 
-// ─── Logo ─────────────────────────────────────────────────────────────────────
-
-function Logo({ compact = false }: { compact?: boolean }) {
+function Brand({ compact = false }: { compact?: boolean }) {
   const { isDark } = useTheme();
-  return (
-    <Link to="/" className={`flex items-center gap-2.5 px-3 py-2 rounded-2xl border backdrop-blur transition-all duration-200 ${
-      isDark
-        ? "bg-white/10 border-white/15 hover:bg-white/15"
-        : "bg-white border-slate-200 shadow-sm hover:shadow-md"
-    }`}>
-      <ImageWithFallback src={logoImg} alt="Tanglaw logo"
-        className={`${compact ? "h-6 w-6" : "h-7 w-7"} object-contain`}
-        style={{ filter: isDark ? "drop-shadow(0 0 4px rgba(255,255,255,0.25))" : "drop-shadow(0 0 4px rgba(245,184,0,0.3))" }} />
-      <ImageWithFallback src={tanglawTextImg} alt="tanglaw"
-        className={`${compact ? "h-4" : "h-5"} object-contain`}
-        style={{ filter: isDark ? "brightness(0) invert(1)" : "none" }} />
-    </Link>
-  );
+  return <Link to="/" className="flex min-w-0 items-center gap-2.5" aria-label="Tanglaw home"><ImageWithFallback src={logoImg} alt="" className="h-8 w-8 shrink-0 object-contain" />{!compact && <ImageWithFallback src={tanglawTextImg} alt="Tanglaw" className="h-5 max-w-24 object-contain" style={{ filter: isDark ? "brightness(0) invert(1)" : undefined }} />}</Link>;
 }
-
-// ─── Public Navbar ────────────────────────────────────────────────────────────
 
 function PublicNavbar() {
-  const [scrolled, setScrolled] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
   const { openModal } = useAuth();
   const { isDark } = useTheme();
-  const smoothNav = useSmoothNav();
-
-  useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 40);
-    window.addEventListener("scroll", fn);
-    return () => window.removeEventListener("scroll", fn);
-  }, []);
-
-  const navBg = scrolled
-    ? isDark
-      ? "bg-[#050E24]/94 backdrop-blur-xl border-b border-white/10 shadow-xl shadow-black/30"
-      : "bg-[#FEFAF2]/97 backdrop-blur-xl border-b border-[#E2D9C4] shadow-md"
-    : "bg-transparent";
-
-  const linkCls = isDark
-    ? "text-blue-200/70 hover:text-white hover:bg-white/8"
-    : "text-[#1E3A6E] hover:text-[#1B2F6E] hover:bg-[#FFF8DC]/80";
-
-  const activeCls = isDark ? "bg-[#F5B800]/15 text-[#F5B800]" : "bg-[#F5B800]/20 text-[#1B2F6E] font-semibold";
-
-  return (
-    <motion.nav
-      initial={{ y: -80, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${navBg}`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 lg:h-20">
-          <Logo />
-
-          {/* Desktop links */}
-          <div className="hidden lg:flex items-center gap-0.5">
-            {publicLinks.map(({ label, href }) => (
-              <button key={href}
-                onClick={() => smoothNav(href)}
-                className={`text-sm px-3.5 py-2 rounded-xl font-medium transition-all duration-200 whitespace-nowrap ${linkCls}`}>
-                {label}
-              </button>
-            ))}
-          </div>
-
-          {/* Right: theme toggle + auth */}
-          <div className="hidden lg:flex items-center gap-2">
-            <ThemeToggle />
-            <button onClick={openModal}
-              className={`text-sm px-5 py-2.5 rounded-xl font-semibold border transition-all duration-200 ${isDark ? "text-blue-200/70 hover:text-white border-transparent" : "text-[#1B2F6E] border-[#1B2F6E]/25 bg-white hover:border-[#F5B800] hover:bg-slate-50"}`}
-              style={{ boxShadow: !isDark ? "var(--tng-shadow-xs)" : undefined }}>
-              Sign In
-            </button>
-            <button onClick={openModal}
-              className="text-sm font-bold px-5 py-2.5 rounded-full bg-gradient-to-r from-[#F5B800] to-[#FFD44D] text-[#050E24] hover:shadow-lg hover:shadow-[#F5B800]/30 transition-all duration-200 hover:-translate-y-0.5">
-              Create Account
-            </button>
-          </div>
-
-          <div className="flex items-center gap-2 lg:hidden">
-            <ThemeToggle />
-            <button
-              className={`p-2 ${isDark ? "text-white" : "text-[#1A2B4A]"}`}
-              onClick={() => setMobileOpen(!mobileOpen)}>
-              {mobileOpen ? <X size={22} /> : <Menu size={22} />}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <AnimatePresence>
-        {mobileOpen && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className={`lg:hidden border-t ${isDark ? "bg-[#0C1A3A] border-white/10" : "bg-[#FEFAF2] border-[#E2D9C4] shadow-lg"}`}>
-            <div className="px-6 py-4 flex flex-col gap-2">
-              {publicLinks.map(({ label, href }) => (
-                <button key={href}
-                  onClick={() => { smoothNav(href); setMobileOpen(false); }}
-                  className={`text-left px-4 py-3 rounded-xl text-sm transition-all ${isDark ? "text-blue-200/80 hover:text-white hover:bg-white/8" : "text-[#1E3A6E] hover:text-[#1B2F6E] hover:bg-[#FFF8DC]/70"}`}>
-                  {label}
-                </button>
-              ))}
-              <div className={`mt-2 pt-2 border-t flex flex-col gap-2 ${isDark ? "border-white/10" : "border-slate-200"}`}>
-                <button onClick={() => { openModal(); setMobileOpen(false); }}
-                  className="w-full py-3 rounded-full bg-gradient-to-r from-[#F5B800] to-[#FFD44D] text-[#050E24] font-bold text-sm">
-                  Create Account
-                </button>
-                <button onClick={() => { openModal(); setMobileOpen(false); }}
-                  className={`w-full py-3 rounded-full border text-sm font-semibold ${isDark ? "border-white/20 text-white" : "border-slate-300 text-[#1A2B4A]"}`}>
-                  Sign In
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.nav>
-  );
-}
-
-// ─── App Navbar (authenticated) ───────────────────────────────────────────────
-
-function AppNavbar() {
+  const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const { userRole, userName, signOut } = useAuth();
-  const { isDark } = useTheme();
+  const [active, setActive] = useState("home");
   const navigate = useNavigate();
   const location = useLocation();
-
+  const sections = [["Home", "home"], ["Features", "features"], ["How It Works", "workflow"], ["Why Tanglaw", "why-tanglaw"], ["About Us", "about"]] as const;
   useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 40);
-    window.addEventListener("scroll", fn);
-    return () => window.removeEventListener("scroll", fn);
+    const updateScroll = () => setScrolled(window.scrollY > 12);
+    updateScroll(); window.addEventListener("scroll", updateScroll, { passive: true });
+    return () => window.removeEventListener("scroll", updateScroll);
   }, []);
-
-  const roleLabel = roleLabelMap[userRole ?? ""] ?? userRole ?? "User";
-  const initials = (userName || "U").slice(0, 2).toUpperCase();
-
-  const navBg = isDark
-    ? scrolled
-      ? "bg-[#050E24]/96 backdrop-blur-xl border-b border-white/10 shadow-xl shadow-black/30"
-      : "bg-[#050E24]/80 backdrop-blur-lg border-b border-white/8"
-    : scrolled
-      ? "bg-[#FEFAF2]/97 backdrop-blur-xl border-b border-[#E2D9C4] shadow-md"
-      : "bg-[#FEFAF2]/92 backdrop-blur-lg border-b border-[#E2D9C4]";
-
-  const linkCls = (active: boolean) => active
-    ? isDark ? "bg-[#F5B800]/15 text-[#F5B800]" : "bg-[#F5B800]/20 text-[#1B2F6E] font-semibold"
-    : isDark
-      ? "text-blue-200/65 hover:text-white hover:bg-white/8"
-      : "text-[#1E3A6E] hover:text-[#1B2F6E] hover:bg-[#FFF8DC]/80";
-
-  return (
-    <motion.nav
-      initial={{ y: -80, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${navBg}`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <Logo compact />
-
-          {/* App links */}
-          <div className="hidden xl:flex items-center gap-0.5 overflow-x-auto">
-            {appLinks.map(({ label, href, icon: Icon }) => (
-              <Link key={href} to={href}
-                className={`flex items-center gap-1.5 text-xs px-3 py-2 rounded-xl font-semibold transition-all duration-200 whitespace-nowrap ${linkCls(location.pathname === href)}`}>
-                <Icon size={13} />{label}
-              </Link>
-            ))}
-          </div>
-
-          {/* Right controls */}
-          <div className="hidden lg:flex items-center gap-2">
-            <ThemeToggle />
-            <button className={`relative w-9 h-9 rounded-xl border flex items-center justify-center transition-all ${isDark ? "border-white/12 text-blue-200/60 hover:text-white hover:bg-white/8" : "border-slate-200 text-[#1B2F6E]/70 hover:text-[#1B2F6E] bg-white hover:bg-slate-50"}`}
-              style={{ boxShadow: !isDark ? "var(--tng-shadow-xs)" : undefined }}>
-              <Bell size={16} />
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#D4187E]" />
-            </button>
-            <Link to="/accessibility"
-              className={`w-9 h-9 rounded-xl border flex items-center justify-center transition-all ${isDark ? "border-white/12 text-blue-200/60 hover:text-white hover:bg-white/8" : "border-slate-200 text-[#1B2F6E]/70 hover:text-[#1B2F6E] bg-white hover:bg-slate-50"}`}
-              style={{ boxShadow: !isDark ? "var(--tng-shadow-xs)" : undefined }}>
-              <Accessibility size={16} />
-            </Link>
-
-            <div className="relative">
-              <button onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-xl border transition-all ml-1 ${isDark ? "border-white/15 bg-white/8 hover:bg-white/12" : "border-slate-200 bg-white hover:bg-slate-50"}`}
-                style={{ boxShadow: !isDark ? "var(--tng-shadow-xs)" : undefined }}>
-                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#F5B800] to-[#D4187E] flex items-center justify-center flex-shrink-0">
-                  <span className="text-[9px] font-extrabold text-white">{initials}</span>
-                </div>
-                <div className="flex flex-col items-start">
-                  <span className={`text-xs font-bold leading-none ${isDark ? "text-white" : "text-[#1A2B4A]"}`}>{userName || "User"}</span>
-                  <span className={`text-[9px] leading-none mt-0.5 ${isDark ? "text-blue-200/50" : "text-slate-400"}`}>{roleLabel}</span>
-                </div>
-                <ChevronDown size={12} className={`transition-transform ${userMenuOpen ? "rotate-180" : ""} ${isDark ? "text-blue-200/50" : "text-slate-400"}`} />
-              </button>
-
-              <AnimatePresence>
-                {userMenuOpen && (
-                  <motion.div initial={{ opacity: 0, y: 8, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 8, scale: 0.96 }} transition={{ duration: 0.15 }}
-                    className={`absolute right-0 top-full mt-2 w-56 border rounded-2xl shadow-2xl overflow-hidden ${isDark ? "bg-[#0C1A3A] border-white/15" : "bg-[#FEFAF2] border-[#E2D9C4]"}`}>
-                    <div className={`px-4 py-3 border-b ${isDark ? "border-white/8" : "border-slate-100"}`}>
-                      <p className={`text-xs font-bold ${isDark ? "text-white" : "text-[#1A2B4A]"}`}>{userName}</p>
-                      <p className={`text-[10px] ${isDark ? "text-blue-200/50" : "text-slate-400"}`}>{roleLabel}</p>
-                    </div>
-                    <div className="p-1">
-                      {[
-                        { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-                        { label: "Profile", href: "/profile", icon: User },
-                        { label: "Accessibility", href: "/accessibility", icon: Accessibility },
-                      ].map(({ label, href, icon: Icon }) => (
-                        <button key={href} onClick={() => { navigate(href); setUserMenuOpen(false); }}
-                          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors ${isDark ? "hover:bg-white/8" : "hover:bg-slate-50"}`}>
-                          <Icon size={14} className="text-[#F5B800]" />
-                          <span className={`text-sm ${isDark ? "text-white" : "text-[#1A2B4A]"}`}>{label}</span>
-                        </button>
-                      ))}
-                      <div className={`border-t mt-1 pt-1 ${isDark ? "border-white/8" : "border-slate-100"}`}>
-                        <button onClick={() => { signOut(); setUserMenuOpen(false); navigate("/"); }}
-                          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors ${isDark ? "hover:bg-white/8" : "hover:bg-slate-50"}`}>
-                          <LogOut size={14} className={isDark ? "text-blue-200/50" : "text-slate-400"} />
-                          <span className={`text-sm ${isDark ? "text-blue-200/70" : "text-slate-500"}`}>Sign Out</span>
-                        </button>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 lg:hidden">
-            <ThemeToggle />
-            <button className={`p-2 ${isDark ? "text-white" : "text-[#1A2B4A]"}`} onClick={() => setMobileOpen(!mobileOpen)}>
-              {mobileOpen ? <X size={22} /> : <Menu size={22} />}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <AnimatePresence>
-        {mobileOpen && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className={`lg:hidden border-t max-h-[80vh] overflow-y-auto ${isDark ? "bg-[#0C1A3A] border-white/10" : "bg-[#FEFAF2] border-[#E2D9C4]"}`}>
-            <div className="px-6 py-4 flex flex-col gap-1.5">
-              {appLinks.map(({ label, href, icon: Icon }) => (
-                <Link key={href} to={href} onClick={() => setMobileOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all ${
-                    location.pathname === href
-                      ? "bg-[#F5B800]/12 text-[#F5B800]"
-                      : isDark ? "text-blue-200/80 hover:text-white hover:bg-white/8" : "text-[#1E3A6E] hover:text-[#1B2F6E] hover:bg-[#FFF8DC]/70"
-                  }`}>
-                  <Icon size={16} className={location.pathname === href ? "text-[#F5B800]" : isDark ? "text-[#F5B800]/70" : "text-[#1B2F6E]/50"} />
-                  {label}
-                </Link>
-              ))}
-              <div className={`mt-2 pt-2 border-t flex flex-col gap-1 ${isDark ? "border-white/10" : "border-slate-200"}`}>
-                <Link to="/profile" onClick={() => setMobileOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all ${isDark ? "text-blue-200/80 hover:text-white hover:bg-white/8" : "text-[#1E3A6E] hover:text-[#1B2F6E] hover:bg-[#FFF8DC]/70"}`}>
-                  <User size={16} className={isDark ? "text-blue-200/50" : "text-[#1B2F6E]/50"} />Profile
-                </Link>
-                <button onClick={() => { signOut(); setMobileOpen(false); navigate("/"); }}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all ${isDark ? "text-blue-200/50 hover:bg-white/8" : "text-slate-500 hover:bg-slate-50"}`}>
-                  <LogOut size={16} />Sign Out
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.nav>
-  );
+  useEffect(() => {
+    if (location.pathname !== "/") return;
+    const observer = new IntersectionObserver((entries) => {
+      const visible = entries.filter(entry => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+      if (visible) setActive(visible.target.id);
+    }, { rootMargin: "-30% 0px -55% 0px", threshold: [0.05, 0.2, 0.5] });
+    sections.forEach(([, id]) => document.getElementById(id) && observer.observe(document.getElementById(id)!));
+    return () => observer.disconnect();
+  }, [location.pathname]);
+  const goHome = (id: string) => { navigate("/"); window.setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" }), 80); setOpen(false); };
+  const linkStyle = isDark ? "text-blue-100/75 hover:text-white" : "text-[#1B2F6E] hover:text-[#C91C3A]";
+  const navBg = scrolled || open ? (isDark ? "border-white/10 bg-[#050E24]/92 shadow-lg shadow-black/10" : "border-[#E2D9C4] bg-[#FEFAF2]/92 shadow-lg shadow-[#1B2F6E]/5") : "border-transparent bg-transparent";
+  return <header className={`fixed inset-x-0 top-0 z-50 border-b backdrop-blur-xl transition-all duration-300 ${navBg}`}><div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6"><Brand /><nav className="hidden items-center gap-4 lg:gap-5 md:flex">{sections.map(([label, id]) => <button key={id} onClick={() => goHome(id)} className={`rounded-lg px-1 py-2 text-sm font-semibold transition-colors ${active === id ? "text-[#D4187E]" : linkStyle}`} aria-current={active === id ? "page" : undefined}>{label}</button>)}</nav><div className="hidden items-center gap-2 md:flex"><ThemeToggle /><button onClick={() => openModal("signIn")} className={`rounded-xl px-3 py-2 text-sm font-semibold ${linkStyle}`}>Sign In</button><button onClick={() => openModal("signUp")} className="rounded-full bg-[#F5B800] px-4 py-2 text-sm font-bold text-[#050E24]">Create Account</button></div><div className="flex items-center gap-2 md:hidden"><ThemeToggle /><button onClick={() => setOpen(!open)} aria-expanded={open} aria-label="Toggle navigation" className={linkStyle}>{open ? <X /> : <Menu />}</button></div></div><AnimatePresence>{open && <motion.nav initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className={`border-t p-4 md:hidden ${isDark ? "border-white/10 bg-[#0C1A3A]" : "border-slate-200 bg-white"}`}><div className="flex flex-col gap-2">{sections.map(([label, id]) => <button key={id} onClick={() => goHome(id)} className={`rounded-xl px-3 py-2 text-left text-sm font-semibold ${active === id ? "bg-[#F5B800]/15 text-[#1B2F6E]" : linkStyle}`}>{label}</button>)}<button onClick={() => { openModal("signIn"); setOpen(false); }} className="rounded-xl border border-[#1B2F6E]/30 px-3 py-2 text-sm font-bold text-[#1B2F6E]">Sign In</button><button onClick={() => { openModal("signUp"); setOpen(false); }} className="rounded-xl bg-[#F5B800] px-3 py-2 text-sm font-bold text-[#050E24]">Create Account</button></div></motion.nav>}</AnimatePresence></header>;
 }
 
-// ─── Navbar (auto-switches) ───────────────────────────────────────────────────
-
-export function Navbar() {
-  const { isAuthenticated } = useAuth();
-  return isAuthenticated ? <AppNavbar /> : <PublicNavbar />;
+function AppSidebar({ collapsed, closeMobile }: { collapsed: boolean; closeMobile: () => void }) {
+  const { userRole, userName, signOut } = useAuth();
+  const { isDark } = useTheme();
+  const location = useLocation(); const navigate = useNavigate();
+  const role = userRole as Role | null;
+  const visible = useMemo(() => navigation.map(section => ({ ...section, items: section.items.filter(item => !item.roles || (role !== null && item.roles.includes(role))) })).filter(section => section.items.length), [role]);
+  const logout = async () => { await signOut(); closeMobile(); navigate("/"); };
+  const base = isDark ? "border-white/10 bg-[#081631] text-blue-100" : "border-[#E2D9C4] bg-[#FEFAF2] text-[#1A2B4A]";
+  return <aside className={`flex h-full flex-col border-r ${base}`}><div className={`flex h-16 items-center border-b px-4 ${isDark ? "border-white/10" : "border-[#E2D9C4]"}`}><Brand compact={collapsed} /></div><nav className="flex-1 overflow-y-auto px-3 py-5" aria-label="Application navigation">{visible.map(section => <section key={section.label} className="mb-5"><p className={`mb-2 px-2 text-[10px] font-extrabold uppercase tracking-[0.16em] ${collapsed ? "sr-only" : isDark ? "text-blue-200/45" : "text-slate-400"}`}>{section.label}</p><div className="space-y-1">{section.items.map(item => { const Icon = item.icon; const active = location.pathname === item.href; return <Link key={`${section.label}-${item.label}`} to={item.href} onClick={closeMobile} title={collapsed ? item.label : undefined} className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-[#F5B800] ${active ? "bg-[#F5B800] text-[#050E24] shadow-sm" : isDark ? "text-blue-100/65 hover:bg-white/8 hover:text-white" : "text-slate-600 hover:bg-[#FFF8DC] hover:text-[#1B2F6E]"}`}><Icon size={18} className="shrink-0" />{!collapsed && <span>{item.label}</span>}</Link>; })}</div></section>)}</nav><div className={`border-t p-3 ${isDark ? "border-white/10" : "border-[#E2D9C4]"}`}><Link to="/profile" onClick={closeMobile} className={`mb-2 flex items-center gap-3 rounded-xl p-2 ${isDark ? "hover:bg-white/8" : "hover:bg-white"}`}><span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#F5B800] to-[#D4187E] text-xs font-extrabold text-white">{(userName || "U").slice(0, 2).toUpperCase()}</span>{!collapsed && <span className="min-w-0"><span className="block truncate text-xs font-bold">{userName || "Tanglaw member"}</span><span className={`block truncate text-[10px] ${isDark ? "text-blue-200/50" : "text-slate-500"}`}>{roleLabel[userRole ?? ""] ?? "Member"}</span></span>}</Link><button onClick={() => void logout()} className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold ${isDark ? "text-blue-100/65 hover:bg-white/8" : "text-slate-500 hover:bg-white"}`}><LogOut size={18} />{!collapsed && "Log out"}</button></div></aside>;
 }
 
-// ─── PageLayout ───────────────────────────────────────────────────────────────
-
-export function PageLayout({ children }: { children: ReactNode }) {
-  return (
-    <div className="min-h-screen transition-colors duration-300"
-      style={{ background: "var(--tng-page)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-      <Navbar />
-      {children}
-    </div>
-  );
+function AuthenticatedNavigation() {
+  const [collapsed, setCollapsed] = useState(() => localStorage.getItem("tanglaw-sidebar-collapsed") === "true");
+  const [mobileOpen, setMobileOpen] = useState(false); const [noticesOpen, setNoticesOpen] = useState(false);
+  const location = useLocation(); const { isDark } = useTheme();
+  useEffect(() => { localStorage.setItem("tanglaw-sidebar-collapsed", String(collapsed)); document.documentElement.style.setProperty("--tng-sidebar-width", collapsed ? "5rem" : "16rem"); }, [collapsed]);
+  useEffect(() => setMobileOpen(false), [location.pathname]);
+  const title = navigation.flatMap(section => section.items).find(item => item.href === location.pathname)?.label ?? "Tanglaw";
+  const width = collapsed ? "lg:w-20" : "lg:w-64";
+  const headerLeft = collapsed ? "lg:left-20" : "lg:left-64";
+  const header = isDark ? "border-white/10 bg-[#050E24]/92 text-white" : "border-[#E2D9C4] bg-[#FEFAF2]/92 text-[#1A2B4A]";
+  return <><aside className={`fixed inset-y-0 left-0 z-50 hidden transition-[width] duration-200 lg:block ${width}`}><AppSidebar collapsed={collapsed} closeMobile={() => undefined} /><button onClick={() => setCollapsed(!collapsed)} aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} className={`absolute -right-3 top-20 grid h-6 w-6 place-items-center rounded-full border shadow ${isDark ? "border-white/15 bg-[#0C1A3A] text-white" : "border-slate-200 bg-white text-[#1B2F6E]"}`}>{collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}</button></aside><header className={`fixed right-0 top-0 z-40 flex h-16 items-center justify-between border-b px-4 backdrop-blur-xl transition-[left] duration-200 ${headerLeft} ${header}`}><div className="flex items-center gap-3"><button onClick={() => setMobileOpen(true)} className="lg:hidden" aria-label="Open sidebar"><Menu /></button><h1 className="text-base font-extrabold">{title}</h1></div><div className="relative flex items-center gap-2"><ThemeToggle /><button onClick={() => setNoticesOpen(!noticesOpen)} aria-label="Notifications" aria-expanded={noticesOpen} className={`relative grid h-9 w-9 place-items-center rounded-xl border ${isDark ? "border-white/15 hover:bg-white/10" : "border-slate-200 bg-white hover:bg-[#FFF8DC]"}`}><Bell size={16} /><span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-[#D4187E]" /></button>{noticesOpen && <div className={`absolute right-0 top-11 w-72 rounded-2xl border p-4 shadow-xl ${isDark ? "border-white/15 bg-[#0C1A3A]" : "border-slate-200 bg-white"}`}><p className="text-sm font-bold">Notifications</p><p className={`mt-2 text-xs leading-relaxed ${isDark ? "text-blue-100/65" : "text-slate-500"}`}>You’re all caught up. New verification and community updates will appear here.</p></div>}</div></header><AnimatePresence>{mobileOpen && <><motion.button aria-label="Close sidebar" onClick={() => setMobileOpen(false)} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-slate-950/55 lg:hidden" /><motion.aside initial={{ x: -300 }} animate={{ x: 0 }} exit={{ x: -300 }} transition={{ type: "spring", damping: 28, stiffness: 320 }} className="fixed inset-y-0 left-0 z-[60] w-72 lg:hidden"><AppSidebar collapsed={false} closeMobile={() => setMobileOpen(false)} /><button onClick={() => setMobileOpen(false)} aria-label="Close sidebar" className="absolute right-3 top-5 rounded-lg p-1"><X size={18} /></button></motion.aside></>}</AnimatePresence></>;
 }
+
+export function Navbar() { const { isAuthenticated, isLoading } = useAuth(); if (isLoading) return null; return isAuthenticated ? <AuthenticatedNavigation /> : <PublicNavbar />; }
+export function PageLayout({ children }: { children: ReactNode }) { const { isAuthenticated } = useAuth(); return <main className={isAuthenticated ? "min-h-screen lg:pl-[var(--tng-sidebar-width,16rem)] transition-[padding] duration-200" : "min-h-screen"}>{children}</main>; }
