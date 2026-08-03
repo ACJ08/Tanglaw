@@ -1,11 +1,10 @@
-import { supabase } from '../supabaseClient';
 import { useState, useEffect, useRef } from "react";
 import { BrowserRouter, Routes, Route, Link, useNavigate } from "react-router";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence, type Variants } from "motion/react";
 import {
   Shield, WifiOff, MapPin, BookOpen, AlertTriangle, CheckCircle,
   ChevronDown, ArrowRight, X, Users, Globe, Zap, Eye, Heart,
-  Accessibility, BarChart2, Clock,
+  Accessibility, BarChart2, Clock, Volume2,
   Lock, Radio, FileCheck, Layers,
   Github, Twitter, Facebook, Youtube, Instagram,
   Search, Fingerprint, MessageSquare, Mail, Linkedin,
@@ -78,7 +77,7 @@ function useInView(threshold = 0.2) {
   return { ref, inView };
 }
 
-const fadeUp = {
+const fadeUp: Variants = {
   hidden: { opacity: 0, y: 32 },
   show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
 };
@@ -123,19 +122,13 @@ function SignUpModal() {
         return;
       }
 
-      // Notice: NO 'await' keyword here. We use .then() instead.
-      signUp(form.email, form.password, {
-        data: {
-          full_name: form.name || "User",
-          role: selectedRole,
-        }
-      }).then(({ success, error }) => {
+      signUp({ email: form.email, password: form.password, fullName: form.name || "User", role: selectedRole }).then(({ error }) => {
         
         setIsLoading(false);
 
         if (error) {
           setAuthError(error.message);
-        } else if (success) {
+        } else {
           handleClose();
         }
         
@@ -426,7 +419,7 @@ function Hero() {
             </motion.p>
 
             <motion.div variants={fadeUp} className="flex flex-wrap gap-3">
-              <button onClick={openModal}
+              <button onClick={() => openModal()}
                 className={`group flex items-center gap-2 px-6 py-3 rounded-full font-bold transition-all duration-300 hover:-translate-y-0.5 text-sm ${isDark ? "text-[#050E24] bg-gradient-to-r from-[#F5B800] to-[#FFD44D] hover:shadow-xl hover:shadow-[#F5B800]/30" : "text-white bg-[#1B2F6E] hover:bg-[#243D8A]"}`}
                 style={{ boxShadow: !isDark ? "var(--tng-shadow-navy)" : undefined }}>
                 Get Started Free <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
@@ -1378,7 +1371,7 @@ function CTASection() {
               Every verified fact is a step toward a more informed, resilient community. Start today — it's <em className="not-italic font-semibold" style={{ color: "var(--tng-text-1)" }}>free, always</em>.
             </motion.p>
             <motion.div variants={fadeUp} className="flex flex-wrap justify-center gap-4">
-              <button onClick={openModal}
+              <button onClick={() => openModal()}
                 className="flex items-center gap-2 px-8 py-4 rounded-full font-bold text-[#050E24] bg-gradient-to-r from-[#F5B800] to-[#FFD44D] hover:shadow-2xl hover:shadow-[#F5B800]/30 transition-all hover:-translate-y-1">
                 Sign Up Free <ArrowRight size={18} />
               </button>

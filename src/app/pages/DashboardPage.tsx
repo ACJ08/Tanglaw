@@ -186,7 +186,7 @@ export default function DashboardPage() {
             <p className={`mb-6 text-sm ${isDark ? "text-blue-200/60" : "text-[#5F7AA8]"}`} style={{ fontFamily: "'Inter',sans-serif" }}>
               Create a free Tanglaw account to access your personalized dashboard, verification history, and role-specific tools.
             </p>
-            <button onClick={openModal}
+            <button onClick={() => openModal()}
               className="w-full py-3.5 rounded-full font-bold text-[#050E24] bg-gradient-to-r from-[#F5B800] to-[#FFD44D] hover:shadow-lg hover:shadow-[#F5B800]/25 transition-all">
               Create Free Account
             </button>

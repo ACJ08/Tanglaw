@@ -11,7 +11,7 @@ import { useTheme } from "@/app/context/ThemeContext";
 import processingImg from "@/imports/5__processing.png";
 import verificationImg from "@/imports/3__Verification.png";
 import successImg from "@/imports/11__Success.png";
-import { supabase } from "@/supabaseClient";
+import { isSupabaseConfigured, supabase } from "@/supabaseClient";
 import { useAuth } from "@/app/context/AuthContext";
 import { toast } from "sonner";
 
@@ -158,6 +158,7 @@ export default function VerifyPage() {
 
   const saveHistory = async () => {
     if (!result || !user) return;
+    if (!isSupabaseConfigured || "isDemo" in user) { toast.error("History saving requires a configured Supabase account."); return; }
     setIsSaving(true);
     const inputHash = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(inputText.trim())))).map(value => value.toString(16).padStart(2, "0")).join("");
     const serializableResult = { ...result, indicators: result.indicators.map(({ icon: _icon, ...indicator }) => indicator) };

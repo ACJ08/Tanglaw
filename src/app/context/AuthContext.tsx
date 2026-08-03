@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from "react";
 import type { AuthError, Session, User } from "@supabase/supabase-js";
-import { supabase } from "../../supabaseClient";
+import { isSupabaseConfigured, supabase } from "../../supabaseClient";
 import { clearDemoSession, findDemoAccount, readDemoSession, type DemoUser, writeDemoSession } from "@/app/auth/demoAuth";
 
 export type AuthModalMode = "signIn" | "signUp" | "verify" | "forgotPassword";
@@ -60,6 +60,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let active = true;
     const initialize = async () => {
+      if (!isSupabaseConfigured) {
+        if (active) setIsLoading(false);
+        return;
+      }
       const { data } = await supabase.auth.getSession();
       if (active) {
         setSession(data.session);
@@ -68,6 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
     void initialize();
+    if (!isSupabaseConfigured) return () => { active = false; };
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       if (active) {
         setSession(nextSession);
@@ -90,12 +95,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     clearDemoSession();
     setDemoUser(null);
+    if (!isSupabaseConfigured) return { error: { message: "Sign-in is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY." } as AuthError };
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
     if (!error) setModalOpen(false);
     return { error };
   };
 
   const signUp = async ({ email, password, fullName, role }: SignUpInput) => {
+    if (!isSupabaseConfigured) return { error: { message: "Sign-up is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY." } as AuthError, requiresEmailConfirmation: false };
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(), password,
       options: {
@@ -107,17 +114,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const resendVerificationEmail = async (email: string) => {
+    if (!isSupabaseConfigured) return { error: { message: "Email verification is not configured." } as AuthError };
     const { error } = await supabase.auth.resend({ type: "signup", email: email.trim(), options: { emailRedirectTo: `${window.location.origin}/auth/callback` } });
     return { error };
   };
 
   const resetPassword = async (email: string) => {
+    if (!isSupabaseConfigured) return { error: { message: "Password reset is not configured." } as AuthError };
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/auth/callback` });
     return { error };
   };
 
   const checkEmailVerification = async () => {
     if (demoUser) return { verified: true, error: null };
+    if (!isSupabaseConfigured) return { verified: false, error: { message: "Authentication is not configured." } as AuthError };
     const { data, error } = await supabase.auth.getUser();
     return { verified: Boolean(data.user?.email_confirmed_at), error };
   };
@@ -129,6 +139,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setDemoUser(null);
       return { error: null };
     }
+    if (!isSupabaseConfigured) return { error: null };
     const { error } = await supabase.auth.signOut({ scope: "local" });
     if (!error) setSession(null);
     return { error };

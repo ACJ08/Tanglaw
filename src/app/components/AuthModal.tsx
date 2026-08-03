@@ -2,7 +2,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { CheckCircle2, Eye, EyeOff, KeyRound, Mail, Send, X } from "lucide-react";
 import { useNavigate } from "react-router";
 import { useAuth } from "@/app/context/AuthContext";
-import { demoAccounts, demoAuthEnabled } from "@/app/auth/demoAuth";
+import { demoAccounts, demoAuthEnabled, type DemoUser } from "@/app/auth/demoAuth";
 import { DemoAccountsPanel } from "./DemoAccountsPanel";
 
 const roles = ["citizen", "student", "official", "teacher", "ngo", "humanitarian"];
