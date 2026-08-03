@@ -13,7 +13,7 @@ const reports = [
 
 const contributors = [
   { name: "Angel Reyes", role: "Student Advocate", reports: 24, verified: 19, badge: "Top Contributor" },
-  { name: "Maria Santos", role: "Community Member", reports: 18, verified: 15, badge: "Verified Voice" },
+  { name: "Maria Santos", role: "Community Member", reports: 18, verified: 15, badge: "Verified Contributor" },
   { name: "Teacher Lorna", role: "Educator", reports: 12, verified: 12, badge: "Truth Champion" },
 ];
 

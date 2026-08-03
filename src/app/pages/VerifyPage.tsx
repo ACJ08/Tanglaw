@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { ChangeEvent, useRef, useState } from "react";
+import { recognize } from "tesseract.js";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  Search, Upload, Mic, CheckCircle, XCircle, AlertTriangle, Info,
+  Search, Upload, CheckCircle, XCircle, AlertTriangle, Info,
   Link2, Clock, DollarSign, UserX, Zap, Eye, Shield, ChevronDown, RotateCcw
 } from "lucide-react";
 import { PageLayout } from "@/app/components/Layout";
@@ -10,6 +11,9 @@ import { useTheme } from "@/app/context/ThemeContext";
 import processingImg from "@/imports/5__processing.png";
 import verificationImg from "@/imports/3__Verification.png";
 import successImg from "@/imports/11__Success.png";
+import { supabase } from "@/supabaseClient";
+import { useAuth } from "@/app/context/AuthContext";
+import { toast } from "sonner";
 
 type VerifyStatus = "idle" | "analyzing" | "result";
 type Verdict = "safe" | "false" | "misleading" | "unverified";
@@ -92,10 +96,15 @@ const severityColor = { high: "#EF4444", medium: "#F59E0B", low: "#22C55E" };
 
 export default function VerifyPage() {
   const { isDark } = useTheme();
+  const { user } = useAuth();
   const [inputText, setInputText] = useState("");
   const [status, setStatus] = useState<VerifyStatus>("idle");
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [activeTab, setActiveTab] = useState<"text" | "url">("text");
+  const [verificationSource, setVerificationSource] = useState<"ai" | "mock_fallback">("mock_fallback");
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const detect = (text: string): AnalysisResult => {
     const t = text.toLowerCase();
@@ -112,17 +121,53 @@ export default function VerifyPage() {
     };
   };
 
-  const handleVerify = () => {
+  const toDisplayResult = (value: Omit<AnalysisResult, "indicators"> & { indicators: { label: string; severity: "high" | "medium" | "low"; detail: string }[] }): AnalysisResult => ({
+    ...value,
+    indicators: value.indicators.map((indicator) => ({ ...indicator, icon: indicator.severity === "high" ? AlertTriangle : indicator.severity === "medium" ? Eye : Info })),
+  });
+
+  const handleVerify = async () => {
     if (!inputText.trim()) return;
     setStatus("analyzing");
     setResult(null);
-    setTimeout(() => {
-      setResult(detect(inputText));
-      setStatus("result");
-    }, 3200);
+    const started = Date.now();
+    try {
+      const response = await fetch("/api/verify", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: inputText, type: activeTab }) });
+      if (!response.ok) throw new Error((await response.json() as { error?: string }).error ?? "Online verification failed");
+      const data = await response.json() as { result: Omit<AnalysisResult, "indicators"> & { indicators: { label: string; severity: "high" | "medium" | "low"; detail: string }[] } };
+      const remaining = Math.max(0, 900 - (Date.now() - started));
+      window.setTimeout(() => { setVerificationSource("ai"); setIsSaved(false); setResult(toDisplayResult(data.result)); setStatus("result"); }, remaining);
+    } catch (error) {
+      // detect(), mockResults, and sampleTexts remain the seamless offline/demo fallback.
+      const remaining = Math.max(0, 900 - (Date.now() - started));
+      window.setTimeout(() => { setVerificationSource("mock_fallback"); setIsSaved(false); setResult(detect(inputText)); setStatus("result"); }, remaining);
+      if (activeTab === "url" && error instanceof Error && !/unavailable/i.test(error.message)) window.setTimeout(() => window.alert(error.message), remaining);
+    }
   };
 
-  const handleReset = () => { setStatus("idle"); setResult(null); setInputText(""); };
+  const handleImage = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const supportedTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!supportedTypes.includes(file.type)) { toast.error("Upload a JPEG, PNG, or WebP image."); event.target.value = ""; return; }
+    if (file.size > 10 * 1024 * 1024) { toast.error("Image uploads must be 10 MB or smaller."); event.target.value = ""; return; }
+    setStatus("analyzing"); setResult(null);
+    let extracted = inputText;
+    try { const { data } = await recognize(file, "eng"); extracted = data.text.trim(); if (!extracted) throw new Error("No readable text was found in this image."); setInputText(extracted); const response = await fetch("/api/verify", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: extracted, type: "text" }) }); if (!response.ok) throw new Error((await response.json() as { error?: string }).error ?? "Image analysis is unavailable."); const payload = await response.json() as { result: Omit<AnalysisResult, "indicators"> & { indicators: { label: string; severity: "high" | "medium" | "low"; detail: string }[] } }; setVerificationSource("ai"); setIsSaved(false); setResult(toDisplayResult(payload.result)); } catch (error) { setVerificationSource("mock_fallback"); setIsSaved(false); setResult(detect(extracted)); toast.error(error instanceof Error ? `${error.message} Offline analysis was used instead.` : "Image analysis failed. Offline analysis was used instead."); } finally { setStatus("result"); event.target.value = ""; }
+  };
+
+  const saveHistory = async () => {
+    if (!result || !user) return;
+    setIsSaving(true);
+    const inputHash = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(inputText.trim())))).map(value => value.toString(16).padStart(2, "0")).join("");
+    const serializableResult = { ...result, indicators: result.indicators.map(({ icon: _icon, ...indicator }) => indicator) };
+    const { error } = await supabase.from("verification_history").upsert({ user_id: user.id, original_input: inputText, input_hash: inputHash, result: serializableResult, verdict: result.verdict, confidence: result.confidence, verification_source: verificationSource }, { onConflict: "user_id,input_hash" });
+    setIsSaving(false);
+    if (error) { toast.error("Could not save this verification. Please try again."); return; }
+    setIsSaved(true); toast.success("Saved to your verification history.");
+  };
+
+  const handleReset = () => { setStatus("idle"); setResult(null); setInputText(""); setIsSaved(false); };
 
   const VConfig = result ? verdictConfig[result.verdict] : null;
   const VIcon = VConfig?.icon ?? Info;
@@ -199,11 +244,9 @@ export default function VerifyPage() {
                 />
                 <div className={`flex items-center justify-between mt-4 pt-4 border-t ${isDark ? "border-white/10" : "border-slate-100"}`}>
                   <div className="flex gap-2">
-                    <button className={`flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg border transition-all ${isDark ? "text-blue-200/50 hover:text-blue-200/80 border-white/10 hover:border-white/20" : "text-[#5F7AA8] hover:text-[#2E4A7A] border-slate-200 hover:border-slate-300"}`}>
+                    <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImage} />
+                    <button onClick={() => fileInputRef.current?.click()} className={`flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg border transition-all ${isDark ? "text-blue-200/50 hover:text-blue-200/80 border-white/10 hover:border-white/20" : "text-[#5F7AA8] hover:text-[#2E4A7A] border-slate-200 hover:border-slate-300"}`}>
                       <Upload size={13} />Upload image
-                    </button>
-                    <button className={`flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg border transition-all ${isDark ? "text-blue-200/50 hover:text-blue-200/80 border-white/10 hover:border-white/20" : "text-[#5F7AA8] hover:text-[#2E4A7A] border-slate-200 hover:border-slate-300"}`}>
-                      <Mic size={13} />Voice input
                     </button>
                   </div>
                   <button onClick={handleVerify} disabled={!inputText.trim()}
@@ -234,7 +277,7 @@ export default function VerifyPage() {
             <motion.div key="analyzing" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
               className="flex flex-col items-center justify-center py-16 gap-8">
               <div className="relative">
-                {/* Speech bubble pulse overlay on processing image */}
+                {/* Analysis bubble pulse overlay on processing image */}
                 <ImageWithFallback src={processingImg} alt="Liyab analyzing" className="w-56 object-contain" />
                 <motion.div animate={{ opacity: [0.5, 1, 0.5], scale: [0.95, 1.08, 0.95] }}
                   transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
@@ -374,8 +417,8 @@ export default function VerifyPage() {
                   style={!isDark ? { boxShadow: "0 2px 6px rgba(15,30,56,0.08), 0 0 0 1px rgba(15,30,56,0.04)" } : undefined}>
                   <RotateCcw size={15} />Verify Another
                 </button>
-                <button className="flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-[#F5B800] to-[#FFD44D] text-[#050E24] font-bold text-sm hover:shadow-lg hover:shadow-[#F5B800]/25 transition-all">
-                  Save to History
+                <button onClick={() => void saveHistory()} disabled={isSaving || isSaved} className="flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-[#F5B800] to-[#FFD44D] text-[#050E24] font-bold text-sm hover:shadow-lg hover:shadow-[#F5B800]/25 transition-all disabled:cursor-not-allowed disabled:opacity-70">
+                  {isSaving ? "Saving…" : isSaved ? "Saved to History" : "Save to History"}
                 </button>
               </div>
             </motion.div>

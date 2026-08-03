@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "motion/react";
 import {
   Shield, WifiOff, MapPin, BookOpen, AlertTriangle, CheckCircle,
   ChevronDown, ArrowRight, X, Users, Globe, Zap, Eye, Heart,
-  Volume2, Accessibility, BarChart2, Clock,
+  Accessibility, BarChart2, Clock,
   Lock, Radio, FileCheck, Layers,
   Github, Twitter, Facebook, Youtube, Instagram,
   Search, Fingerprint, MessageSquare, Mail, Linkedin,
@@ -38,6 +38,7 @@ import carolPortrait from "@/imports/team/carol.jpg";
 import VerifyPage from "@/app/pages/VerifyPage";
 import CrisisPage from "@/app/pages/CrisisPage";
 import DashboardPage from "@/app/pages/DashboardPage";
+import HistoryPage from "@/app/pages/HistoryPage";
 import TruthHubPage from "@/app/pages/TruthHubPage";
 import CommunityPage from "@/app/pages/CommunityPage";
 import LearnPage from "@/app/pages/LearnPage";
@@ -46,6 +47,7 @@ import SyncPage from "@/app/pages/SyncPage";
 import ProfilePage from "@/app/pages/ProfilePage";
 import AccessibilityPage from "@/app/pages/AccessibilityPage";
 import AuthCallbackPage from "@/app/pages/AuthCallbackPage";
+import { Toaster } from "@/app/components/ui/sonner";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -603,7 +605,7 @@ const marqueeItems = [
   { icon: MapPin, label: "Truth Hub Network" }, { icon: AlertTriangle, label: "Scam Detection" },
   { icon: BookOpen, label: "Learning Center" }, { icon: Clock, label: "Verification History" },
   { icon: Users, label: "Community Reports" }, { icon: Eye, label: "Media Literacy" },
-  { icon: Volume2, label: "Voice Support" }, { icon: Accessibility, label: "Accessibility First" },
+  { icon: Accessibility, label: "Accessibility First" },
   { icon: Globe, label: "Taglish Support" }, { icon: BarChart2, label: "Confidence Scoring" },
 ];
 
@@ -1504,10 +1506,12 @@ function AppInner() {
         <Route path="/offline" element={<ProtectedRoute><OfflinePage /></ProtectedRoute>} />
         <Route path="/sync" element={<ProtectedRoute><SyncPage /></ProtectedRoute>} />
         <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+        <Route path="/history" element={<ProtectedRoute><HistoryPage /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
         <Route path="/accessibility" element={<AccessibilityPage />} />
       </Routes>
       <AuthModal />
+      <Toaster richColors position="top-right" />
     </div>
   );
 }

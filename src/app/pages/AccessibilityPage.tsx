@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
-import { Accessibility, Sun, Volume2, Globe, Zap, Eye, Type, Minimize2, CheckCircle } from "lucide-react";
+import { Accessibility, Sun, Globe, Zap, Eye, Type, Minimize2, CheckCircle } from "lucide-react";
 import { PageLayout } from "@/app/components/Layout";
 import { useTheme } from "@/app/context/ThemeContext";
 
 interface AccessibilitySettings {
   highContrast: boolean;
   largeText: boolean;
-  voiceGuidance: boolean;
   simplifiedInterface: boolean;
   reducedMotion: boolean;
   colorBlindMode: string;
@@ -18,7 +17,6 @@ interface AccessibilitySettings {
 const defaultSettings: AccessibilitySettings = {
   highContrast: false,
   largeText: false,
-  voiceGuidance: false,
   simplifiedInterface: false,
   reducedMotion: false,
   colorBlindMode: "none",
@@ -63,7 +61,6 @@ export default function AccessibilityPage() {
   const toggles: Array<{ key: keyof AccessibilitySettings; icon: typeof Eye; label: string; desc: string; color: string }> = [
     { key: "highContrast", icon: Sun, label: "High Contrast Mode", desc: "Increases text and UI contrast for better visibility in bright environments.", color: "#F5B800" },
     { key: "largeText", icon: Type, label: "Large Text Mode", desc: "Increases base font size across the entire application.", color: "#D4187E" },
-    { key: "voiceGuidance", icon: Volume2, label: "Voice Guidance", desc: "Liyab will narrate key actions, results, and navigation items aloud.", color: "#4A9EF5" },
     { key: "simplifiedInterface", icon: Minimize2, label: "Simplified Interface", desc: "Hides advanced options and shows only essential actions — ideal for first-time users.", color: "#22C55E" },
     { key: "reducedMotion", icon: Zap, label: "Reduce Motion", desc: "Disables animations and transitions for users with motion sensitivity.", color: "#8B5CF6" },
   ];
@@ -230,12 +227,6 @@ export default function AccessibilityPage() {
                       3 Sources Checked
                     </span>
                   </div>
-                  {settings.voiceGuidance && (
-                    <div className="mt-4 flex items-center gap-2 px-3 py-2 rounded-xl bg-[#4A9EF5]/15 border border-[#4A9EF5]/30">
-                      <Volume2 size={13} className="text-[#4A9EF5]" />
-                      <span className="text-[10px] text-[#4A9EF5]">Voice guidance active</span>
-                    </div>
-                  )}
                 </div>
 
                 {/* Current settings summary */}
@@ -248,7 +239,6 @@ export default function AccessibilityPage() {
                     {[
                       ["High Contrast", settings.highContrast],
                       ["Large Text", settings.largeText],
-                      ["Voice Guidance", settings.voiceGuidance],
                       ["Simplified UI", settings.simplifiedInterface],
                       ["Reduced Motion", settings.reducedMotion],
                     ].map(([label, active]) => (

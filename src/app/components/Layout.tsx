@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { AnimatePresence, motion } from "motion/react";
-import { Bell, BookOpen, ChevronLeft, ChevronRight, Database, LayoutDashboard, LogOut, MapPin, Menu, Moon, Network, Radio, Settings, Shield, Sun, User, Users, X } from "lucide-react";
+import { Bell, BookOpen, ChevronLeft, ChevronRight, Clock, Database, LayoutDashboard, LogOut, MapPin, Menu, Moon, Network, Radio, Settings, Shield, Sun, User, Users, X } from "lucide-react";
 import { ImageWithFallback } from "@/app/components/figma/ImageWithFallback";
 import { useAuth } from "@/app/context/AuthContext";
 import { useTheme } from "@/app/context/ThemeContext";
@@ -14,7 +14,7 @@ type NavSection = { label: string; items: NavItem[] };
 
 const roleLabel: Record<string, string> = { citizen: "Community Member", student: "Student Advocate", official: "Barangay Official", teacher: "Educator", ngo: "NGO Partner", humanitarian: "Humanitarian Partner" };
 const navigation: NavSection[] = [
-  { label: "Main", items: [{ label: "Dashboard", href: "/dashboard", icon: LayoutDashboard }, { label: "Verify", href: "/verify", icon: Shield }, { label: "Learn", href: "/learn", icon: BookOpen }] },
+  { label: "Main", items: [{ label: "Dashboard", href: "/dashboard", icon: LayoutDashboard }, { label: "Verify", href: "/verify", icon: Shield }, { label: "History", href: "/history", icon: Clock }, { label: "Learn", href: "/learn", icon: BookOpen }] },
   { label: "Community", items: [{ label: "Truth Hubs", href: "/truth-hubs", icon: MapPin }, { label: "Community", href: "/community", icon: Users, roles: ["official", "ngo", "humanitarian"] }] },
   { label: "Intelligence", items: [{ label: "Threat Ledger", href: "/offline", icon: Database }, { label: "Offline Sync", href: "/sync", icon: Network }, { label: "Crisis Mode", href: "/crisis", icon: Radio, roles: ["official", "humanitarian"] }] },
   { label: "Account", items: [{ label: "Profile", href: "/profile", icon: User }, { label: "Settings", href: "/accessibility", icon: Settings }] },

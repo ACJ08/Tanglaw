@@ -40,7 +40,7 @@ const dashboardConfigs: Record<string, {
       { label: "Threat Ledger", href: "/offline", icon: Database, color: "#4A9EF5", desc: "Browse known scam patterns" },
       { label: "Learn", href: "/learn", icon: BookOpen, color: "#D4187E", desc: "Continue media literacy lessons" },
       { label: "Find Truth Hub", href: "/truth-hubs", icon: MapPin, color: "#22C55E", desc: "Locate nearest verification center" },
-      { label: "Accessibility", href: "/accessibility", icon: Zap, color: "#8B5CF6", desc: "Adjust display and voice settings" },
+      { label: "Accessibility", href: "/accessibility", icon: Zap, color: "#8B5CF6", desc: "Adjust display and interface settings" },
     ],
     recentActivity: [
       { action: "Verified: GCash scam message", detail: "Result: Confirmed Scam · High confidence", time: "2h ago", color: "#EF4444" },

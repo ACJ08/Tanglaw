@@ -1,0 +1,2 @@
+import type { RequestHandler } from "express";
+export const validateVerify: RequestHandler = (req,res,next) => { const {text,type}=req.body as {text?:unknown;type?:unknown}; if(typeof text!=="string"||!text.trim()) return res.status(400).json({error:"Please provide text or a URL to verify."}); if(text.length>15_000) return res.status(413).json({error:"Please limit the input to 15,000 characters."}); if(type!==undefined&&type!=="text"&&type!=="url") return res.status(400).json({error:"Invalid verification type."}); next(); };
