@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { BrowserRouter, Routes, Route, Link, useNavigate } from "react-router";
-import { motion, AnimatePresence, type Variants } from "motion/react";
+import { motion, AnimatePresence, useReducedMotion, type Variants } from "motion/react";
 import {
   Shield, WifiOff, MapPin, BookOpen, AlertTriangle, CheckCircle,
   ChevronDown, ArrowRight, X, Users, Globe, Zap, Eye, Heart,
@@ -939,20 +939,61 @@ function WhyTanglaw() {
 }
 
 const team = [
-  { name: "Carl Jacob Mateo", role: "Backend Developer & Database Developer", initials: "CJ", portrait: jacobPortrait, bio: "Designs scalable backend systems, API architecture, database optimization, authentication workflows, and reliable data synchronization across Tanglaw.", email: "carljacob.mateo@gmail.com", network: "LinkedIn", href: "https://www.linkedin.com/in/carl-jacob-mateo-367b41256/", Icon: Linkedin },
-  { name: "Raphiel Anne Roslin", role: "Graphic Designer", initials: "RA", portrait: raphPortrait, bio: "Shapes Tanglaw’s visual identity, branding, illustrations, and user-centered graphics so information is clear, welcoming, and effective.", email: "raphielanneroslin@gmail.com", network: "Facebook", href: "https://www.facebook.com/share/18tTazaDbv/?mibextid=wwXIfr", Icon: Facebook },
-  { name: "Anne Carol G. Jonson", role: "Frontend Developer · Backend Developer · AI Integration Engineer · Researcher", initials: "AC", portrait: carolPortrait, bio: "Leads Tanglaw’s frontend experience, backend integration, AI-powered verification workflows, and research to deliver a seamless, intelligent platform.", email: "annecaroljonson1108@gmail.com", network: "LinkedIn", href: "https://www.linkedin.com/in/annecaroljonson/", Icon: Linkedin },
+  {
+    name: "Anne Carol G. Jonson",
+    leadershipTitle: "Founder & Chief Executive Officer",
+    role: "Frontend Developer · Backend Developer · AI Integration Engineer · Researcher",
+    initials: "AC",
+    portrait: carolPortrait,
+    bio: "Leads Tanglaw's frontend experience, backend integration, AI-powered verification workflows, and research to deliver a seamless, intelligent, and trustworthy platform.",
+    email: "annecaroljonson1108@gmail.com",
+    network: "LinkedIn",
+    href: "https://www.linkedin.com/in/annecaroljonson/",
+    Icon: Linkedin,
+    isFounder: true,
+  },
+  {
+    name: "Carl Jacob Mateo",
+    leadershipTitle: "Co-founder",
+    role: "Backend Developer & Database Developer",
+    initials: "CJ",
+    portrait: jacobPortrait,
+    bio: "Designs scalable backend systems, API architecture, database optimization, authentication workflows, and reliable data synchronization across Tanglaw.",
+    email: "carljacob.mateo@gmail.com",
+    network: "LinkedIn",
+    href: "https://www.linkedin.com/in/carl-jacob-mateo-367b41256/",
+    Icon: Linkedin,
+    isFounder: false,
+  },
+  {
+    name: "Raphiel Anne Roslin",
+    leadershipTitle: "Co-founder",
+    role: "Graphic Designer",
+    initials: "RA",
+    portrait: raphPortrait,
+    bio: "Shapes Tanglaw's visual identity, branding, illustrations, and user-centered graphics so information is clear, welcoming, and effective.",
+    email: "raphielanneroslin@gmail.com",
+    network: "Facebook",
+    href: "https://www.facebook.com/share/18tTazaDbv/?mibextid=wwXIfr",
+    Icon: Facebook,
+    isFounder: false,
+  },
 ];
 
-function TeamProfileImage({ src, name, initials }: { src: string; name: string; initials: string }) {
+function TeamProfileImage({ src, name, initials, large = false }: { src: string; name: string; initials: string; large?: boolean }) {
   const [failed, setFailed] = useState(false);
-  if (failed) return <div role="img" aria-label={`Portrait of ${name} unavailable`} className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-[#F5B800] via-[#F3A52A] to-[#D4187E] text-sm font-extrabold text-[#050E24]">{initials}</div>;
-  return <img src={src} alt={`Portrait of ${name}`} loading="lazy" decoding="async" onError={() => setFailed(true)} className="h-16 w-16 shrink-0 rounded-2xl border-2 border-white/70 object-cover object-top shadow-sm transition-transform duration-300 group-hover:scale-105" />;
+  const sizeClass = large ? "h-20 w-20 sm:h-24 sm:w-24 rounded-3xl text-base" : "h-16 w-16 rounded-2xl text-sm";
+  if (failed) return <div role="img" aria-label={`Portrait of ${name} unavailable`} className={`grid shrink-0 place-items-center bg-gradient-to-br from-[#F5B800] via-[#F3A52A] to-[#D4187E] font-extrabold text-[#050E24] ${sizeClass}`}>{initials}</div>;
+  return <img src={src} alt={`Portrait of ${name}`} loading="lazy" decoding="async" onError={() => setFailed(true)} className={`shrink-0 border-2 border-white/70 object-cover object-top shadow-sm transition-transform duration-300 group-hover:scale-105 ${sizeClass}`} />;
 }
 
 function AboutSection() {
   const { ref, inView } = useInView(0.1);
   const { isDark } = useTheme();
+  const shouldReduceMotion = useReducedMotion();
+  const founder = team.find((member) => member.isFounder)!;
+  const coFounders = team.filter((member) => !member.isFounder);
+  const FounderIcon = founder.Icon;
   const emailStyle = isDark ? "border-[#FB7185]/45 bg-[#FB7185]/15 text-[#FDA4AF] hover:bg-[#FB7185]/25 hover:shadow-[0_8px_20px_rgba(251,113,133,0.2)]" : "border-[#FDA4AF]/65 bg-[#FFF1F2] text-[#BE123C] hover:bg-[#FFE4E6] hover:shadow-[0_8px_20px_rgba(190,24,93,0.15)]";
   const socialStyle = (network: string) => isDark
     ? network === "LinkedIn" ? "border-[#60A5FA]/45 bg-[#3B82F6]/15 text-[#93C5FD] hover:bg-[#3B82F6]/25 hover:shadow-[0_8px_20px_rgba(96,165,250,0.2)]" : "border-[#60A5FA]/45 bg-[#2563EB]/15 text-[#93C5FD] hover:bg-[#2563EB]/25 hover:shadow-[0_8px_20px_rgba(96,165,250,0.2)]"
@@ -968,17 +1009,53 @@ function AboutSection() {
           <h2 className="text-3xl font-extrabold sm:text-4xl" style={{ color: "var(--tng-text-1)" }}>Technology with a community <em className="not-italic" style={{ color: "var(--tng-gold-text)" }}>at its heart</em></h2>
           <p className="mt-5 text-sm leading-relaxed sm:text-base" style={{ color: "var(--tng-text-2)" }}>Tanglaw is an offline-first community verification platform built to combat misinformation through trustworthy verification, media literacy, and resilient technology. Our interdisciplinary team combines software engineering, artificial intelligence, user experience, and visual communication.</p>
         </motion.div>
-        <motion.div variants={fadeUp} className="mt-14 flex items-end justify-between gap-6"><h3 className="text-2xl font-extrabold" style={{ color: "var(--tng-text-1)" }}>Meet the team</h3><span className="hidden text-xs font-semibold sm:block" style={{ color: "var(--tng-text-3)" }}>Building clarity, together</span></motion.div>
-        <div className="mt-6 grid gap-5 lg:grid-cols-3">
-          {team.map(({ Icon, ...member }) => <motion.article key={member.name} variants={fadeUp} whileHover={{ y: -7 }} className={`group flex flex-col rounded-3xl border p-6 transition-shadow ${isDark ? "border-white/10 bg-white/5 hover:border-white/20" : "border-slate-200 bg-white hover:shadow-xl"}`} style={{ boxShadow: !isDark ? "var(--tng-shadow-sm)" : undefined }}>
-            <div className="mb-5 flex items-center gap-4"><TeamProfileImage src={member.portrait} name={member.name} initials={member.initials} /><div><h4 className="font-bold" style={{ color: "var(--tng-text-1)" }}>{member.name}</h4><p className="mt-1 text-[11px] font-semibold leading-relaxed text-[#D4187E]">{member.role}</p></div></div>
-            <p className="text-sm leading-relaxed" style={{ color: "var(--tng-text-2)" }}>{member.bio}</p>
-            <div className="mt-6 flex items-center gap-2 border-t pt-5" style={{ borderColor: "var(--tng-border)" }}>
-              <a href={`mailto:${member.email}`} title="Send Email" aria-label={`Send email to ${member.name}`} className={`${controlBase} ${emailStyle}`}><Mail size={17} strokeWidth={2.25} /></a>
-              <a href={member.href} target="_blank" rel="noreferrer" title={`Open ${member.network}`} aria-label={`${member.name} on ${member.network}`} className={`${controlBase} ${socialStyle(member.network)}`}><Icon size={17} strokeWidth={2.25} /></a>
-              <a href={`mailto:${member.email}`} aria-label={`Send email to ${member.name}`} className={`ml-auto rounded-lg px-2 py-2 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5B800] ${isDark ? "text-[#FDE68A] hover:bg-[#F5B800]/10" : "text-[#1B2F6E] hover:bg-[#FFF8DC] hover:text-[#BE123C]"}`}>Send email</a>
-            </div>
-          </motion.article>)}
+        <motion.div variants={fadeUp} className="mt-14 flex items-end justify-between gap-6"><h3 className="text-2xl font-extrabold" style={{ color: "var(--tng-text-1)" }}>Meet the Team</h3><span className="hidden text-xs font-semibold sm:block" style={{ color: "var(--tng-text-3)" }}>Leadership grounded in trust, technology, and community</span></motion.div>
+
+        <div className="relative mt-6">
+          <div className="grid gap-5 lg:grid-cols-2 lg:gap-6">
+            <motion.article variants={fadeUp} whileHover={shouldReduceMotion ? undefined : { y: -6 }} className={`group relative lg:col-span-2 lg:mx-auto lg:w-[min(52rem,100%)] flex flex-col rounded-3xl border p-6 sm:p-7 transition-all ${isDark ? "border-[#F5B800]/35 bg-gradient-to-br from-[#F5B800]/10 via-white/[0.035] to-[#D4187E]/10 hover:border-[#F5B800]/55" : "border-[#F5B800]/40 bg-gradient-to-br from-[#FFF8DC] via-white to-[#FCE7F3] hover:shadow-xl"}`} style={{ boxShadow: !isDark ? "var(--tng-shadow-md)" : "0 12px 40px rgba(245,184,0,0.12)" }}>
+              <div className="mb-5 flex flex-wrap items-center gap-2">
+                <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ${isDark ? "border-[#F5B800]/40 bg-[#F5B800]/15 text-[#F5B800]" : "border-[#F5B800]/45 bg-[#FFF3C2] text-[#8B6800]"}`}>
+                  <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                  Leadership
+                </span>
+                <span className={`inline-flex rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ${isDark ? "border-[#D4187E]/40 bg-[#D4187E]/15 text-[#F9A8D4]" : "border-[#D4187E]/30 bg-[#FDF2F8] text-[#BE185D]"}`}>
+                  Founder
+                </span>
+              </div>
+              <div className="mb-5 flex items-start gap-4 sm:gap-5">
+                <TeamProfileImage src={founder.portrait} name={founder.name} initials={founder.initials} large />
+                <div className="min-w-0">
+                  <h4 className="text-2xl font-extrabold leading-tight sm:text-3xl" style={{ color: "var(--tng-text-1)" }}>{founder.name}</h4>
+                  <p className="mt-2 text-xs font-black uppercase tracking-[0.16em] sm:text-[13px]" style={{ color: "var(--tng-gold-text)" }}>{founder.leadershipTitle}</p>
+                  <p className="mt-2 text-sm font-semibold leading-relaxed" style={{ color: isDark ? "#FDE68A" : "#6B4F00" }}>{founder.role}</p>
+                </div>
+              </div>
+              <p className="text-sm leading-relaxed sm:text-[15px]" style={{ color: "var(--tng-text-2)" }}>{founder.bio}</p>
+              <div className="mt-6 flex items-center gap-2 border-t pt-5" style={{ borderColor: "var(--tng-border)" }}>
+                <a href={`mailto:${founder.email}`} title="Send Email" aria-label={`Send email to ${founder.name}`} className={`${controlBase} ${emailStyle}`}><Mail size={17} strokeWidth={2.25} /></a>
+                <a href={founder.href} target="_blank" rel="noreferrer" title={`Open ${founder.network}`} aria-label={`${founder.name} on ${founder.network}`} className={`${controlBase} ${socialStyle(founder.network)}`}><FounderIcon size={17} strokeWidth={2.25} /></a>
+                <a href={`mailto:${founder.email}`} aria-label={`Send email to ${founder.name}`} className={`ml-auto rounded-lg px-2 py-2 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5B800] ${isDark ? "text-[#FDE68A] hover:bg-[#F5B800]/10" : "text-[#1B2F6E] hover:bg-[#FFF8DC] hover:text-[#BE123C]"}`}>Send email</a>
+              </div>
+            </motion.article>
+
+            {coFounders.map(({ Icon, ...member }) => <motion.article key={member.name} variants={fadeUp} whileHover={shouldReduceMotion ? undefined : { y: -5 }} className={`group flex flex-col rounded-3xl border p-6 transition-all ${isDark ? "border-white/12 bg-white/5 hover:border-white/25" : "border-slate-200 bg-white hover:shadow-lg"}`} style={{ boxShadow: !isDark ? "var(--tng-shadow-sm)" : undefined }}>
+              <div className="mb-5 flex items-start gap-4">
+                <TeamProfileImage src={member.portrait} name={member.name} initials={member.initials} />
+                <div className="min-w-0">
+                  <h4 className="text-xl font-extrabold leading-tight" style={{ color: "var(--tng-text-1)" }}>{member.name}</h4>
+                  <p className="mt-2 text-[11px] font-black uppercase tracking-[0.15em] text-[#D4187E]">{member.leadershipTitle}</p>
+                  <p className="mt-2 text-sm font-semibold leading-relaxed" style={{ color: "var(--tng-gold-text)" }}>{member.role}</p>
+                </div>
+              </div>
+              <p className="text-sm leading-relaxed" style={{ color: "var(--tng-text-2)" }}>{member.bio}</p>
+              <div className="mt-6 flex items-center gap-2 border-t pt-5" style={{ borderColor: "var(--tng-border)" }}>
+                <a href={`mailto:${member.email}`} title="Send Email" aria-label={`Send email to ${member.name}`} className={`${controlBase} ${emailStyle}`}><Mail size={17} strokeWidth={2.25} /></a>
+                <a href={member.href} target="_blank" rel="noreferrer" title={`Open ${member.network}`} aria-label={`${member.name} on ${member.network}`} className={`${controlBase} ${socialStyle(member.network)}`}><Icon size={17} strokeWidth={2.25} /></a>
+                <a href={`mailto:${member.email}`} aria-label={`Send email to ${member.name}`} className={`ml-auto rounded-lg px-2 py-2 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5B800] ${isDark ? "text-[#FDE68A] hover:bg-[#F5B800]/10" : "text-[#1B2F6E] hover:bg-[#FFF8DC] hover:text-[#BE123C]"}`}>Send email</a>
+              </div>
+            </motion.article>)}
+          </div>
         </div>
       </motion.div>
     </div>
