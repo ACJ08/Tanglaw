@@ -8,6 +8,8 @@
     "typecheck": "tsc --noEmit",
     "dev": "vite",
     "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "server": "tsx backend/src/server.ts",
     "dev:full": "concurrently \"npm run dev\" \"npm run server\""
   },
@@ -86,7 +88,8 @@
     "tailwindcss": "4.1.12",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3",
-    "vite": "6.3.5"
+    "vite": "6.3.5",
+    "vitest": "^3.2.7"
   },
   "peerDependencies": {
     "react": "18.3.1",
