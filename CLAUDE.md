@@ -19,7 +19,7 @@ All user-facing forms must provide:
 - visible labels
 - field-level validation
 - `aria-invalid` when a field is invalid
-- `role="alert"` for validation errors
+- `role="alert"` for validation errors where appropriate
 - keyboard-accessible controls
 - clear success or failure feedback
 
@@ -47,3 +47,13 @@ After implementing a feature, run:
 npm run typecheck
 npm run test
 npm run build
+
+## 5. Respect Tanglaw's prototype architecture
+
+Tanglaw currently uses prototype/static data for features without backend infrastructure.
+
+Do not introduce browser geolocation, new backend services, persistent storage, or external APIs unless explicitly required by the feature.
+
+For Truth Hub, distances are precomputed in the prototype. "Near Me" should sort using the existing distance values rather than requesting browser geolocation.
+
+Use the simplest external integration that satisfies the prototype requirement without introducing unnecessary API keys or infrastructure.
