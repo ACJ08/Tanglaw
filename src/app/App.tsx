@@ -25,8 +25,7 @@ import verificationImg from "@/imports/3__Verification.png";
 import learnImg from "@/imports/4__Learn.png";
 import processingImg from "@/imports/5__processing.png";
 import scamAlertImg from "@/imports/6__Scam_alert.png";
-import truthHubImg from "@/imports/7__Truth_Hub.png";
-import mapImg from "@/imports/8__map.png";
+import { TruthHubNetworkVisual } from "@/app/components/TruthHubNetworkVisual";
 import appreciationImg from "@/imports/9__Appreciation.png";
 import offlineModeImg from "@/imports/10__Offline_Mode.png";
 import successImg from "@/imports/11__Success.png";
@@ -702,43 +701,12 @@ function FeatureBlock({ image, alt, title, subtitle, description, benefits, cta,
 
 function TruthHubFeature() {
   const { ref, inView } = useInView(0.15);
-  const { isDark } = useTheme();
   return (
     <div ref={ref} className="py-20 lg:py-28">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
         <motion.div initial={{ opacity: 0, x: -40 }} animate={inView ? { opacity: 1, x: 0 } : {}}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }} className="relative flex justify-center">
-          <div className="relative w-full max-w-sm">
-            <div className={`absolute inset-0 rounded-3xl border overflow-hidden ${isDark ? "bg-gradient-to-br from-[#0C1A3A] to-[#050E24] border-white/12" : "bg-white border-slate-200"}`}
-              style={{ boxShadow: !isDark ? "var(--tng-shadow-xl)" : undefined }}>
-              <div className="absolute inset-0 opacity-10">
-                {Array.from({ length: 6 }).map((_, i) => <div key={`h${i}`} className={`absolute border-t ${isDark ? "border-white/30" : "border-slate-400/30"}`} style={{ top: `${i * 18}%`, left: 0, right: 0 }} />)}
-                {Array.from({ length: 5 }).map((_, i) => <div key={`v${i}`} className={`absolute border-l ${isDark ? "border-white/30" : "border-slate-400/30"}`} style={{ left: `${i * 20}%`, top: 0, bottom: 0 }} />)}
-              </div>
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 rounded-full bg-[#F5B800]/15 blur-2xl" />
-            </div>
-            <div className="relative z-10 p-6 flex justify-center">
-              <motion.div animate={{ y: [0, -10, 0] }} transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}>
-                <ImageWithFallback src={truthHubImg} alt="Truth Hub" className="w-48 sm:w-60 object-contain drop-shadow-2xl" />
-              </motion.div>
-            </div>
-            {[[8, 20], [85, 15], [75, 70], [12, 75]].map(([x, y], i) => (
-              <motion.div key={i} animate={{ y: [0, -7, 0] }} transition={{ duration: 2.2 + i * 0.4, repeat: Infinity, delay: i * 0.6 }}
-                className="absolute z-20" style={{ left: `${x}%`, top: `${y}%` }}>
-                <MapPin size={i === 0 ? 24 : 18} style={{ color: i === 0 ? "#F5B800" : "#D4187E" }} />
-              </motion.div>
-            ))}
-            <motion.div animate={{ y: [0, -6, 0] }} transition={{ duration: 3, repeat: Infinity, delay: 1 }}
-              className={`absolute -bottom-3 -right-3 z-30 w-24 h-24 rounded-2xl border p-2 ${isDark ? "border-[#F5B800]/35 bg-[#0C1A3A]/90" : "border-slate-200 bg-white"}`}
-              style={{ boxShadow: !isDark ? "var(--tng-shadow-lg)" : "0 0 24px rgba(0,0,0,0.4)" }}>
-              <ImageWithFallback src={mapImg} alt="Map" className="w-full h-full object-contain" />
-            </motion.div>
-            <div className={`absolute -top-3 -left-3 z-30 px-3 py-2 rounded-xl border flex items-center gap-2 ${isDark ? "border-[#D4187E]/40 bg-[#0C1A3A]/90" : "border-slate-200 bg-white"}`}
-              style={{ boxShadow: !isDark ? "var(--tng-shadow-md)" : "0 0 20px rgba(0,0,0,0.35)" }}>
-              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-xs font-bold" style={{ color: "var(--tng-text-1)" }}>12 Hubs Active</span>
-            </div>
-          </div>
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }} className="relative flex justify-center px-2">
+          <TruthHubNetworkVisual className="pb-6" />
         </motion.div>
 
         <motion.div initial={{ opacity: 0, x: 40 }} animate={inView ? { opacity: 1, x: 0 } : {}}
