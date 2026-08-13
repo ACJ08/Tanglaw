@@ -45,6 +45,7 @@ import SyncPage from "@/app/pages/SyncPage";
 import ProfilePage from "@/app/pages/ProfilePage";
 import AccessibilityPage from "@/app/pages/AccessibilityPage";
 import AuthCallbackPage from "@/app/pages/AuthCallbackPage";
+import HealthCheckPage from "@/app/pages/HealthCheckPage";
 import { Toaster } from "@/app/components/ui/sonner";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -1535,6 +1536,7 @@ function AppInner() {
       <Navbar />
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/health" element={<HealthCheckPage />} />
         <Route path="/auth/callback" element={<AuthCallbackPage />} />
         <Route path="/verify" element={<ProtectedRoute><VerifyPage /></ProtectedRoute>} />
         <Route path="/learn" element={<ProtectedRoute><LearnPage /></ProtectedRoute>} />
