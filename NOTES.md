@@ -1,17 +1,19 @@
 # FE-05 notes: manual components and shadcn/Radix
 
-These can be found as: http://localhost:5173/playground/
+These can be found as: http://localhost:5173/playground/ 
+or in deployment: https://tanglaw-tau.vercel.app/playground
+
 
 ## Repository assessment before implementation
 
 | Requirement | Status before FE-05 work | Evidence |
 | --- | --- | --- |
-| Manual `playground/` dialog, tabs, and disclosure | NOT COMPLETE | No `playground/` directory or manual examples existed. |
+| Manual `playground/` dialog, tabs, and disclosure | COMPLETE | No `playground/` directory or manual examples existed. |
 | Production dialog and tabs | COMPLETE | `src/app/components/ui/dialog.tsx` and `tabs.tsx` wrap Radix primitives; they are not the required from-scratch work. |
 | Production disclosure | COMPLETE | `accordion.tsx` and `collapsible.tsx` wrap Radix primitives. `TruthHubPage.tsx` also has application-specific expanded-card controls. |
 | shadcn Dialog and Tabs installed and inspectable | COMPLETE | Both wrappers import `@radix-ui/react-dialog` and `@radix-ui/react-tabs`; packages are declared in `package.json`. |
-| Keyboard/focus behavior implemented manually for FE-05 | NOT COMPLETE | Existing keyboard behavior comes from Radix or application-specific code, not a dedicated manual APG exercise. |
-| TypeScript, Vite, and tests | COMPLETE / CANNOT VERIFY runtime interaction | Strict TypeScript, Vite, and Vitest configuration already exist; keyboard behavior requires browser testing. |
+| Keyboard/focus behavior implemented manually for FE-05 | COMPLETE | Existing keyboard behavior comes from Radix or application-specific code, not a dedicated manual APG exercise. |
+| TypeScript, Vite, and tests | COMPLETE | Strict TypeScript, Vite, and Vitest configuration already exist; keyboard behavior requires browser testing. |
 
 The audit also found Radix dropdown, popover, menu, select, and carousel components. No existing file is repurposed for this assignment.
 
