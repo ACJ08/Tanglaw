@@ -36,6 +36,10 @@ export default defineConfig({
   build: {
     sourcemap: true,
     rollupOptions: {
+      input: {
+        app: path.resolve(__dirname, 'index.html'),
+        playground: path.resolve(__dirname, 'playground/index.html'),
+      },
       output: {
         manualChunks: {
           react: ['react', 'react-dom', 'react-router'],

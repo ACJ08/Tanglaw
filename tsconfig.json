@@ -17,6 +17,6 @@
     "jsx": "react-jsx",
     "paths": { "@/*": ["./src/*"] }
   },
-  "include": ["src", "backend/src", "api", "vite.config.ts"],
+  "include": ["src", "playground", "backend/src", "api", "vite.config.ts"],
   "exclude": ["src/imports/pasted_text"]
 }
