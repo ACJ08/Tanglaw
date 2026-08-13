@@ -1,70 +1,106 @@
 import { useState } from "react";
-import { toast } from "sonner";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/app/components/ui/dialog";
 import { useTheme } from "@/app/context/ThemeContext";
-import { ReportCategory, REPORT_CATEGORIES } from "./community.types";
+import { Button } from "@/app/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/app/components/ui/dialog";
+import { Input } from "@/app/components/ui/input";
+import { Label } from "@/app/components/ui/label";
+import { Textarea } from "@/app/components/ui/textarea";
+import { CommunityReport, ReportCategory, REPORT_CATEGORIES } from "./community.types";
 
 interface SubmitReportDialogProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  onSubmit: (data: { title: string; body: string; type: ReportCategory; location: string; }) => void;
+  onSubmit: (report: Omit<CommunityReport, 'id' | 'createdAt' | 'user' | 'userId' | 'role' | 'isVerified' | 'votes'>) => void;
 }
 
 export function SubmitReportDialog({ isOpen, onOpenChange, onSubmit }: SubmitReportDialogProps) {
   const { isDark } = useTheme();
   const [title, setTitle] = useState("");
-  const [body, setBody] = useState("");
-  const [type, setType] = useState<ReportCategory>("Misinformation");
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState<ReportCategory | "">("");
   const [location, setLocation] = useState("");
 
   const handleSubmit = () => {
-    if (!title.trim() || !body.trim() || !location.trim()) {
-      toast.error("Please fill out all required fields: Title, Description, and Location.");
-      return;
+    if (title && description && category) {
+      onSubmit({ title, body: description, type: category, status: 'Unverified', location: location || 'Unknown' });
+      onOpenChange(false);
+      // Reset form
+      setTitle("");
+      setDescription("");
+      setCategory("");
+      setLocation("");
+    } else {
+      // Basic validation feedback
+      alert("Please fill in Title, Description, and select a Category.");
     }
-    onSubmit({ title, body, type, location });
-    onOpenChange(false);
-    // Reset form
-    setTitle("");
-    setBody("");
-    setType("Misinformation");
-    setLocation("");
   };
+
+  const dialogContentClasses = isDark
+    ? "bg-slate-950 border-slate-800"
+    : "bg-white";
+
+  const inputClasses = isDark
+    ? "bg-slate-900 border-slate-700 placeholder:text-slate-500"
+    : "bg-slate-50 border-slate-200 placeholder:text-slate-500";
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className={isDark ? "bg-[#0C1A3A] border-white/15" : ""}>
+      <DialogContent className={`sm:max-w-[425px] ${dialogContentClasses}`}>
         <DialogHeader>
-          <DialogTitle style={{ color: "var(--tng-text-1)" }}>Submit a Community Report</DialogTitle>
+          <DialogTitle style={{ color: "var(--tng-text-1)" }}>
+            Submit a Community Report
+          </DialogTitle>
           <DialogDescription style={{ color: "var(--tng-text-3)" }}>
             Your report helps protect the community. Please provide as much detail as possible.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
-            <label htmlFor="title" className="text-right text-sm" style={{ color: "var(--tng-text-2)" }}>Title</label>
-            <input id="title" value={title} onChange={(e) => setTitle(e.target.value)} className={`col-span-3 p-2 rounded-md text-sm border ${isDark ? 'bg-white/5 border-white/10' : 'bg-slate-50 border-slate-200'}`} />
+            <Label htmlFor="title" className="text-right" style={{ color: "var(--tng-text-2)" }}>
+              Title
+            </Label>
+            <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g., Fake Job Offer via SMS" className={`col-span-3 ${inputClasses}`} />
           </div>
           <div className="grid grid-cols-4 items-start gap-4">
-            <label htmlFor="body" className="text-right text-sm pt-2" style={{ color: "var(--tng-text-2)" }}>Description</label>
-            <textarea id="body" value={body} onChange={(e) => setBody(e.target.value)} rows={4} className={`col-span-3 p-2 rounded-md text-sm border resize-none ${isDark ? 'bg-white/5 border-white/10' : 'bg-slate-50 border-slate-200'}`} />
+            <Label htmlFor="description" className="text-right pt-2" style={{ color: "var(--tng-text-2)" }}>
+              Description
+            </Label>
+            <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe the suspicious message, post, or event..." className={`col-span-3 ${inputClasses}`} />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <label htmlFor="type" className="text-right text-sm" style={{ color: "var(--tng-text-2)" }}>Category</label>
-            <select id="type" value={type} onChange={(e) => setType(e.target.value as ReportCategory)} className={`col-span-3 p-2 rounded-md text-sm border ${isDark ? 'bg-white/5 border-white/10' : 'bg-slate-50 border-slate-200'}`}>
-              {REPORT_CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-            </select>
+             <Label className="text-right" style={{ color: "var(--tng-text-2)" }}>
+              Category
+            </Label>
+            <div className="col-span-3 flex flex-wrap gap-2">
+              {REPORT_CATEGORIES.map((cat) => {
+                const isSelected = category === cat;
+                const lightClasses = isSelected ? 'bg-[#F5B800] text-black font-semibold' : 'bg-slate-100 hover:bg-slate-200 text-slate-600';
+                const darkClasses = isSelected ? 'bg-[#F5B800] text-black font-semibold' : 'bg-slate-800 hover:bg-slate-700 text-slate-300';
+                return (
+                  <button key={cat} onClick={() => setCategory(cat)} className={`px-3 py-1 text-xs rounded-full transition-colors ${isDark ? darkClasses : lightClasses}`}>
+                    {cat}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <label htmlFor="location" className="text-right text-sm" style={{ color: "var(--tng-text-2)" }}>Location</label>
-            <input id="location" placeholder="e.g., Brgy. 15, San Pablo" value={location} onChange={(e) => setLocation(e.target.value)} className={`col-span-3 p-2 rounded-md text-sm border ${isDark ? 'bg-white/5 border-white/10' : 'bg-slate-50 border-slate-200'}`} />
+           <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="location" className="text-right" style={{ color: "var(--tng-text-2)" }}>
+              Location
+            </Label>
+            <Input id="location" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="e.g., Manila, PH (Optional)" className={`col-span-3 ${inputClasses}`} />
           </div>
         </div>
         <DialogFooter>
-          <button
-            onClick={handleSubmit}
-            className="px-6 py-2.5 rounded-full bg-gradient-to-r from-[#F5B800] to-[#FFD44D] text-[#050E24] font-bold text-sm"
-          >
+          <Button variant="ghost" onClick={() => onOpenChange(false)} className={isDark ? 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' : ''}>Cancel</Button>
+          <button onClick={handleSubmit} className="flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-gradient-to-r from-[#F5B800] to-[#FFD44D] text-[#050E24] font-bold text-sm">
             Submit Report
           </button>
         </DialogFooter>

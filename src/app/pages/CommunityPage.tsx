@@ -61,12 +61,12 @@ export default function CommunityPage() {
             <div className="lg:col-span-2 flex flex-col gap-4">
               <div className="flex items-center justify-between gap-3 mb-1">
                 <div className={`flex-1 flex items-center gap-3 px-4 py-2 rounded-full border ${isDark ? "border-white/12 bg-white/5" : "border-slate-200 bg-white"}`}>
-                  <Search size={15} className={isDark ? "text-blue-200/40" : "text-slate-400"} />
+                  <Search size={15} className={isDark ? "text-blue-200/40" : "text-slate-500"} />
                   <input
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Search reports by title, user, or content..."
-                    className="w-full bg-transparent text-sm focus:outline-none"
+                    className={`w-full bg-transparent text-sm focus:outline-none ${isDark ? "placeholder-blue-200/40" : "placeholder-slate-500"}`}
                   />
                 </div>
                 <button onClick={() => setIsSubmitOpen(true)} className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#F5B800] to-[#FFD44D] text-[#050E24] font-bold text-xs">
@@ -91,7 +91,7 @@ export default function CommunityPage() {
                         style={{ color: sConfig?.color ?? "#8B5CF6" }}>
                         <SIcon size={11} />{r.status}
                       </span>
-                      <span className={`ml-auto flex items-center gap-1 text-xs ${isDark ? "text-blue-200/40" : "text-slate-400"}`}>
+                      <span className={`ml-auto flex items-center gap-1 text-xs ${isDark ? "text-blue-200/40" : "text-slate-500"}`}>
                         <MapPin size={11} />{r.location} · {formatDistanceToNow(new Date(r.createdAt), { addSuffix: true })}
                       </span>
                     </div>
@@ -100,7 +100,7 @@ export default function CommunityPage() {
                     <p className="text-xs leading-relaxed mb-4" style={{ color: "var(--tng-text-3)", fontFamily: "'Inter',sans-serif" }}>{r.body}</p>
 
                     <div className="flex items-center justify-between">
-                      <div className={`flex items-center gap-1.5 text-xs ${isDark ? "text-blue-200/50" : "text-slate-400"}`}>
+                      <div className={`flex items-center gap-1.5 text-xs ${isDark ? "text-blue-200/50" : "text-slate-500"}`}>
                         <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#F5B800] to-[#D4187E] flex items-center justify-center text-[10px] font-bold text-white">
                           {r.user[0]}
                         </div>
@@ -110,7 +110,7 @@ export default function CommunityPage() {
                         </CheckCircle>}
                       </div>
                       <button onClick={() => toggleVote(r.id)}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${r.votes.includes(localUserId) ? "bg-[#F5B800]/20 text-[#F5B800]" : isDark ? "border border-white/15 text-blue-200/50 hover:border-[#F5B800]/30 hover:text-[#F5B800]" : "border border-slate-200 text-slate-400 hover:border-[#F5B800]/30 hover:text-[#F5B800]"}`}>
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${r.votes.includes(localUserId) ? "bg-[#F5B800]/20 text-[#F5B800]" : isDark ? "border border-white/15 text-blue-200/50 hover:border-[#F5B800]/30 hover:text-[#F5B800]" : "border border-slate-200 text-slate-500 hover:border-[#F5B800]/30 hover:text-[#F5B800]"}`}>
                         <ThumbsUp size={12} />{r.votes.length}
                       </button>
                     </div>
