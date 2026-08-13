@@ -1,48 +1,11 @@
-import { useState } from "react";
+import { useMemo } from "react";
 import { motion } from "motion/react";
-import { Radio, AlertTriangle, CheckCircle, Info, Clock, MapPin, Phone, Shield, ChevronRight, Wifi } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+import { Radio, CheckCircle, Info, Clock, MapPin, Phone, Shield, ChevronRight, Wifi, RefreshCw, WifiOff, AlertTriangle } from "lucide-react";
 import { PageLayout } from "@/app/components/Layout";
 import { useTheme } from "@/app/context/ThemeContext";
-
-const advisories = [
-  {
-    id: 1, severity: "critical", type: "Scam Alert",
-    title: "Typhoon Relief Donation Scam — Ongoing",
-    body: "Fraudulent GCash numbers and fake NGO pages collecting donations following recent typhoon. Verified relief channels listed below.",
-    time: "2 hours ago", verified: true,
-    actions: ["Only donate via DSWD official: donate.dswd.gov.ph", "Verify NGO registration at SEC", "Report fake pages to PNP-ACG: 0998-598-8116"],
-  },
-  {
-    id: 2, severity: "high", type: "Health Advisory",
-    title: "Fake Medicine Sellers Near Evacuation Centers",
-    body: "Reports of unlicensed vendors selling unverified medicines near Barangay 12 evacuation center. FDA advisory in effect.",
-    time: "5 hours ago", verified: true,
-    actions: ["Accept medicines only from identified Red Cross / DOH personnel", "Report suspicious vendors to Barangay Health Worker"],
-  },
-  {
-    id: 3, severity: "medium", type: "Misinformation Alert",
-    title: "Unverified Evacuation Route Circulating on Social Media",
-    body: "A viral post showing an alternative evacuation route has not been confirmed by NDRRMC. Follow only official routes.",
-    time: "8 hours ago", verified: false,
-    actions: ["Follow NDRRMC official routes only: ndrrmc.gov.ph", "Contact your Barangay Emergency Coordinator"],
-  },
-];
-
-const checklist = [
-  { step: "Is the source identified?", desc: "Anonymous or unverifiable sources are a red flag.", done: true },
-  { step: "Has it been published by official agencies?", desc: "NDRRMC, DOH, DSWD, DILG are primary authorities.", done: true },
-  { step: "Does it pressure you to act immediately?", desc: "Urgency is a manipulation tactic. Pause and verify.", done: false },
-  { step: "Are there identifiable links or contact numbers?", desc: "Cross-reference with official hotlines.", done: false },
-  { step: "Have community members independently confirmed?", desc: "Check with Barangay officials or Truth Hubs.", done: false },
-];
-
-const hotlines = [
-  { name: "NDRRMC Operations Center", number: "(02) 8911-1406" },
-  { name: "DOH Emergency Hotline", number: "1555" },
-  { name: "PNP Hotline", number: "117" },
-  { name: "Red Cross Philippines", number: "143" },
-  { name: "DSWD Crisis Hotline", number: "(02) 8931-8101" },
-];
+import { useCrisisData } from "./useCrisisData";
+import { truthHubs, getDirectionsUrl } from "@/app/lib/truthHubData";
 
 const severityConfig = {
   critical: { color: "#EF4444", bg: "bg-red-500/12", border: "border-red-500/30", label: "CRITICAL" },
@@ -51,9 +14,15 @@ const severityConfig = {
 };
 
 export default function CrisisPage() {
-  const [agreed, setAgreed] = useState(false);
-  const [checklistState, setChecklistState] = useState(checklist.map((c) => c.done));
   const { isDark } = useTheme();
+  const { advisories, checklistItems, checklistProgress, hotlines, isLoading, isSyncing, isOnline, lastSyncAt, handleSync, toggleChecklistItem } = useCrisisData();
+  const checklistProgressCount = checklistProgress.length;
+  const totalChecklistItems = checklistItems.length;
+
+  const nearestHub = useMemo(() => {
+    if (!truthHubs || truthHubs.length === 0) return null;
+    return [...truthHubs].sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance))[0];
+  }, []);
 
   return (
     <PageLayout>
@@ -72,8 +41,13 @@ export default function CrisisPage() {
                   Showing only verified advisories from NDRRMC, DOH, and accredited community partners.
                 </p>
               </div>
-              <div className="flex items-center gap-2 text-xs text-red-200">
-                <Wifi size={13} /><span>Last sync: 2 min ago</span>
+              <div className={`flex items-center gap-2 text-xs ${isOnline ? "text-red-200" : "text-amber-300"}`}>
+                {isOnline ? <Wifi size={13} /> : <WifiOff size={13} />}
+                <span>
+                  {isOnline
+                    ? lastSyncAt ? `Last sync: ${formatDistanceToNow(new Date(lastSyncAt), { addSuffix: true })}` : "Ready to sync"
+                    : "Offline · Showing cached data"}
+                </span>
               </div>
             </div>
           </motion.div>
@@ -84,9 +58,23 @@ export default function CrisisPage() {
               <div className="lg:col-span-2">
                 <div className="flex items-center justify-between mb-5">
                   <h2 className="text-xl font-extrabold" style={{ color: "var(--tng-text-1)" }}>Active Advisories</h2>
-                  <span className={`text-xs flex items-center gap-1 ${isDark ? "text-blue-200/50" : "text-slate-400"}`}><Clock size={12} />Auto-updating</span>
+                  <button onClick={handleSync} disabled={isSyncing || !isOnline} className={`text-xs flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-colors ${isDark ? "text-blue-200/50 hover:text-white" : "text-slate-400 hover:text-slate-600"} disabled:opacity-50 disabled:cursor-not-allowed`}>
+                    <motion.div animate={isSyncing ? { rotate: 360 } : { rotate: 0 }} transition={isSyncing ? { duration: 1, repeat: Infinity, ease: "linear" } : {}}>
+                      <RefreshCw size={12} />
+                    </motion.div>
+                    {isSyncing ? "Syncing..." : "Sync Now"}
+                  </button>
                 </div>
-                <div className="flex flex-col gap-4">
+                {isLoading ? (
+                  <div className={`p-8 text-center rounded-2xl border ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white'}`}>
+                    <p style={{ color: "var(--tng-text-2)" }}>Loading advisories...</p>
+                  </div>
+                ) : advisories.length === 0 ? (
+                  <div className={`p-8 text-center rounded-2xl border ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white'}`}>
+                    <p className="font-semibold" style={{ color: "var(--tng-text-1)" }}>No Active Verified Advisories</p>
+                    <p className="text-sm mt-1" style={{ color: "var(--tng-text-3)" }}>Your local cache is up-to-date. Stay safe.</p>
+                  </div>
+                ) : <div className="flex flex-col gap-4">
                   {advisories.map((adv, i) => {
                     const cfg = severityConfig[adv.severity as keyof typeof severityConfig];
                     return (
@@ -101,12 +89,16 @@ export default function CrisisPage() {
                           <span className={`text-xs px-2.5 py-1 rounded-full border ${isDark ? "border-white/12 text-blue-200/60" : "border-slate-200 text-slate-500"}`}>
                             {adv.type}
                           </span>
-                          {adv.verified && (
+                          {adv.isVerified ? (
                             <span className="flex items-center gap-1 text-[10px] text-green-400 font-semibold">
                               <CheckCircle size={11} />Verified
                             </span>
+                          ) : (
+                            <span className="flex items-center gap-1 text-[10px] text-violet-400 font-semibold">
+                              <AlertTriangle size={11} />Unverified
+                            </span>
                           )}
-                          <span className={`ml-auto text-xs ${isDark ? "text-blue-200/40" : "text-slate-400"}`}>{adv.time}</span>
+                          <span className={`ml-auto text-xs ${isDark ? "text-blue-200/40" : "text-slate-400"}`}>{formatDistanceToNow(new Date(adv.publishedAt), { addSuffix: true })}</span>
                         </div>
                         <h3 className="font-bold mb-2 text-sm" style={{ color: "var(--tng-text-1)" }}>{adv.title}</h3>
                         <p className={`text-xs mb-4 leading-relaxed ${isDark ? "text-blue-200/65" : "text-slate-500"}`} style={{ fontFamily: "'Inter',sans-serif" }}>{adv.body}</p>
@@ -120,8 +112,7 @@ export default function CrisisPage() {
                         </div>
                       </motion.div>
                     );
-                  })}
-                </div>
+                  })}</div>}
               </div>
 
               {/* Right: Checklist + Hotlines */}
@@ -135,30 +126,27 @@ export default function CrisisPage() {
                     <Shield size={16} className="text-[#F5B800]" />Verification Checklist
                   </h3>
                   <div className="flex flex-col gap-3">
-                    {checklist.map((item, i) => (
-                      <label key={i} className="flex items-start gap-3 cursor-pointer group">
-                        <button onClick={() => {
-                          const next = [...checklistState];
-                          next[i] = !next[i];
-                          setChecklistState(next);
-                        }} className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-all ${checklistState[i] ? "bg-[#F5B800] border-[#F5B800]" : isDark ? "border-white/25 hover:border-[#F5B800]/50" : "border-slate-300 hover:border-[#F5B800]/50"}`}>
-                          {checklistState[i] && <CheckCircle size={12} className="text-[#050E24]" />}
+                    {checklistItems.map((item) => {
+                      const isChecked = checklistProgress.includes(item.id);
+                      return (<label key={item.id} className="flex items-start gap-3 cursor-pointer group">
+                        <button onClick={() => toggleChecklistItem(item.id)} className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-all ${isChecked ? "bg-[#F5B800] border-[#F5B800]" : isDark ? "border-white/25 hover:border-[#F5B800]/50" : "border-slate-300 hover:border-[#F5B800]/50"}`}>
+                          {isChecked && <CheckCircle size={12} className="text-[#050E24]" />}
                         </button>
                         <div>
-                          <p className={`text-xs font-semibold ${checklistState[i] ? isDark ? "text-blue-200/50 line-through" : "text-slate-400 line-through" : ""}`}
-                            style={!checklistState[i] ? { color: "var(--tng-text-1)" } : undefined}>{item.step}</p>
+                          <p className={`text-xs font-semibold ${isChecked ? isDark ? "text-blue-200/50 line-through" : "text-slate-400 line-through" : ""}`}
+                            style={!isChecked ? { color: "var(--tng-text-1)" } : undefined}>{item.step}</p>
                           <p className={`text-[10px] mt-0.5 ${isDark ? "text-blue-200/40" : "text-slate-400"}`} style={{ fontFamily: "'Inter',sans-serif" }}>{item.desc}</p>
                         </div>
                       </label>
-                    ))}
+                    )})}
                   </div>
                   <div className={`mt-4 pt-4 border-t ${isDark ? "border-white/10" : "border-slate-200"}`}>
                     <div className="flex justify-between text-xs mb-1.5">
-                      <span className={isDark ? "text-blue-200/50" : "text-slate-400"}>Checklist progress</span>
-                      <span className="font-bold" style={{ color: "var(--tng-text-1)" }}>{checklistState.filter(Boolean).length}/{checklist.length}</span>
+                      <span className={isDark ? "text-blue-200/50" : "text-slate-400"}>Checklist Progress</span>
+                      <span className="font-bold" style={{ color: "var(--tng-text-1)" }}>{checklistProgressCount}/{totalChecklistItems}</span>
                     </div>
                     <div className={`h-1.5 rounded-full overflow-hidden ${isDark ? "bg-white/10" : "bg-slate-100"}`}>
-                      <motion.div animate={{ width: `${(checklistState.filter(Boolean).length / checklist.length) * 100}%` }}
+                      <motion.div animate={{ width: `${(checklistProgressCount / totalChecklistItems) * 100}%` }}
                         transition={{ duration: 0.4 }}
                         className="h-full bg-gradient-to-r from-[#F5B800] to-[#FFD44D] rounded-full" />
                     </div>
@@ -172,25 +160,36 @@ export default function CrisisPage() {
                   </h3>
                   <div className="flex flex-col gap-2">
                     {hotlines.map((h) => (
-                      <div key={h.name} className={`flex items-center justify-between py-2 border-b last:border-0 ${isDark ? "border-white/8" : "border-slate-200/60"}`}>
+                      <a key={h.name} href={`tel:${h.number.replace(/[()-\s]/g, "")}`} className={`flex items-center justify-between py-2 border-b last:border-0 ${isDark ? "border-white/8 hover:bg-white/5" : "border-slate-200/60 hover:bg-slate-50"} rounded-md -mx-2 px-2`}>
                         <span className={`text-xs ${isDark ? "text-blue-200/65" : "text-slate-500"}`} style={{ fontFamily: "'Inter',sans-serif" }}>{h.name}</span>
                         <span className="text-xs font-bold" style={{ color: "var(--tng-text-1)" }}>{h.number}</span>
-                      </div>
+                      </a>
                     ))}
                   </div>
                 </div>
 
                 {/* Nearby Truth Hub */}
-                <div className="p-5 rounded-2xl border border-[#F5B800]/25 bg-[#F5B800]/8">
-                  <h3 className="font-bold mb-2 flex items-center gap-2" style={{ color: "var(--tng-text-1)" }}>
-                    <MapPin size={16} className="text-[#F5B800]" />Nearest Truth Hub
-                  </h3>
-                  <p className="text-sm font-semibold" style={{ color: "var(--tng-text-1)" }}>Barangay 15 Hall</p>
-                  <p className={`text-xs mb-3 ${isDark ? "text-blue-200/55" : "text-slate-500"}`} style={{ fontFamily: "'Inter',sans-serif" }}>0.4 km · Open Now · 8AM–8PM</p>
-                  <button className="w-full py-2.5 rounded-xl bg-[#F5B800] text-[#050E24] font-bold text-sm hover:bg-[#FFD44D] transition-colors">
-                    Get Directions
-                  </button>
-                </div>
+                {nearestHub ? (
+                  <div className="p-5 rounded-2xl border border-[#F5B800]/25 bg-[#F5B800]/8">
+                    <h3 className="font-bold mb-2 flex items-center gap-2" style={{ color: "var(--tng-text-1)" }}>
+                      <MapPin size={16} className="text-[#F5B800]" />Nearest Truth Hub
+                    </h3>
+                    <p className="text-sm font-semibold" style={{ color: "var(--tng-text-1)" }}>{nearestHub.name}</p>
+                    <p className={`text-xs mb-3 ${isDark ? "text-blue-200/55" : "text-slate-500"}`} style={{ fontFamily: "'Inter',sans-serif" }}>
+                      {nearestHub.distance} · {nearestHub.status === 'open' ? 'Open Now' : 'Closed'} · {nearestHub.hours}
+                    </p>
+                    <button onClick={() => window.open(getDirectionsUrl(nearestHub), "_blank", "noopener,noreferrer")} className="w-full py-2.5 rounded-xl bg-[#F5B800] text-[#050E24] font-bold text-sm hover:bg-[#FFD44D] transition-colors">
+                      Get Directions
+                    </button>
+                  </div>
+                ) : (
+                  <div className={`p-5 rounded-2xl border ${isDark ? "border-white/12 bg-white/4" : "border-slate-200 bg-white"}`}>
+                     <h3 className="font-bold mb-2 flex items-center gap-2" style={{ color: "var(--tng-text-1)" }}>
+                      <MapPin size={16} className="text-[#F5B800]" />Nearest Truth Hub
+                    </h3>
+                    <p className={`text-xs ${isDark ? "text-blue-200/55" : "text-slate-500"}`} style={{ fontFamily: "'Inter',sans-serif" }}>No Truth Hubs found in your area.</p>
+                  </div>
+                )}
               </div>
             </div>
 

@@ -1,21 +1,12 @@
 import { useState } from "react";
 import { motion } from "motion/react";
-import { Users, ThumbsUp, Flag, CheckCircle, Clock, MapPin, TrendingUp, Shield, Award, Plus } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+import { Users, ThumbsUp, Flag, CheckCircle, Clock, MapPin, TrendingUp, Shield, Award, Plus, Search, Trash2 } from "lucide-react";
 import { PageLayout } from "@/app/components/Layout";
 import { useTheme } from "@/app/context/ThemeContext";
-
-const reports = [
-  { id: 1, user: "Maria S.", role: "Community Member", location: "Brgy. 15", time: "2h ago", type: "Scam", title: "Fake DSWD Relief Text Blast", body: "Received SMS claiming DSWD is giving P10,000 cash aid via GCash. Number is 09XX-XXXX-XXX. DO NOT CLICK.", votes: 47, verified: true, status: "Confirmed Scam" },
-  { id: 2, user: "Teacher Lorna", role: "Educator", location: "San Pedro Elem.", time: "5h ago", type: "Health", title: "Fake Medicine Vendor Near School", body: "Unknown vendor selling unpackaged vitamins near school gate claiming to prevent dengue. Reported to barangay.", votes: 32, verified: true, status: "Under Investigation" },
-  { id: 3, user: "Roberto C.", role: "Senior Citizen", location: "Brgy. 22", time: "1d ago", type: "Election", title: "Fake Candidate Facebook Page", body: "Facebook page impersonating local councilor asking for donations. The real councilor confirmed this is fake.", votes: 89, verified: false, status: "Unverified" },
-  { id: 4, user: "Angel Reyes", role: "Student Advocate", location: "State University", time: "2d ago", type: "Misinformation", title: "False Statistics Circulating on TikTok", body: "Video claiming 'DOH says 90% of Filipinos lack Vitamin D' has been shared 50,000 times. DOH has NOT published this statistic.", votes: 124, verified: true, status: "Confirmed False" },
-];
-
-const contributors = [
-  { name: "Angel Reyes", role: "Student Advocate", reports: 24, verified: 19, badge: "Top Contributor" },
-  { name: "Maria Santos", role: "Community Member", reports: 18, verified: 15, badge: "Verified Contributor" },
-  { name: "Teacher Lorna", role: "Educator", reports: 12, verified: 12, badge: "Truth Champion" },
-];
+import { useCommunityData } from "./useCommunityData";
+import { SubmitReportDialog } from "./SubmitReportDialog";
+import { CommunityReport } from "./community.types";
 
 const typeColor: Record<string, string> = {
   Scam: "#EF4444", Health: "#8B5CF6", Election: "#F59E0B", Misinformation: "#D4187E",
@@ -26,15 +17,26 @@ const statusConfig: Record<string, { color: string; icon: typeof CheckCircle }> 
   "Confirmed False": { color: "#EF4444", icon: Shield },
   "Under Investigation": { color: "#F59E0B", icon: Clock },
   "Unverified": { color: "#8B5CF6", icon: Clock },
+  "Disputed": { color: "#D4187E", icon: Flag },
 };
 
 export default function CommunityPage() {
   const { isDark } = useTheme();
-  const [votes, setVotes] = useState<Record<number, boolean>>({});
+  const { reports, localUserId, isLoading, toggleVote, addReport, statsThisWeek, topContributors, resetData } = useCommunityData();
+  const [isSubmitOpen, setIsSubmitOpen] = useState(false);
+  const [search, setSearch] = useState("");
 
-  const handleVote = (id: number) => setVotes((v) => ({ ...v, [id]: !v[id] }));
+  const filteredReports = reports.filter(r =>
+    r.title.toLowerCase().includes(search.toLowerCase()) ||
+    r.body.toLowerCase().includes(search.toLowerCase()) ||
+    r.user.toLowerCase().includes(search.toLowerCase())
+  );
 
   const cardShadow = !isDark ? "0 2px 6px rgba(15,30,56,0.08), 0 0 0 1px rgba(15,30,56,0.04)" : undefined;
+
+  if (isLoading) {
+    return <PageLayout><div className="pt-24 text-center" style={{ color: "var(--tng-text-2)" }}>Loading community data...</div></PageLayout>;
+  }
 
   return (
     <PageLayout>
@@ -57,13 +59,21 @@ export default function CommunityPage() {
           <div className="grid lg:grid-cols-3 gap-6">
             {/* Feed */}
             <div className="lg:col-span-2 flex flex-col gap-4">
-              <div className="flex items-center justify-between mb-1">
-                <h2 className="text-lg font-bold" style={{ color: "var(--tng-text-1)" }}>Latest Reports</h2>
-                <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#F5B800] to-[#FFD44D] text-[#050E24] font-bold text-xs">
+              <div className="flex items-center justify-between gap-3 mb-1">
+                <div className={`flex-1 flex items-center gap-3 px-4 py-2 rounded-full border ${isDark ? "border-white/12 bg-white/5" : "border-slate-200 bg-white"}`}>
+                  <Search size={15} className={isDark ? "text-blue-200/40" : "text-slate-400"} />
+                  <input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search reports by title, user, or content..."
+                    className="w-full bg-transparent text-sm focus:outline-none"
+                  />
+                </div>
+                <button onClick={() => setIsSubmitOpen(true)} className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#F5B800] to-[#FFD44D] text-[#050E24] font-bold text-xs">
                   <Plus size={13} />Submit Report
                 </button>
               </div>
-              {reports.map((r, i) => {
+              {filteredReports.map((r, i) => {
                 const sConfig = statusConfig[r.status];
                 const SIcon = sConfig?.icon ?? Clock;
                 return (
@@ -82,7 +92,7 @@ export default function CommunityPage() {
                         <SIcon size={11} />{r.status}
                       </span>
                       <span className={`ml-auto flex items-center gap-1 text-xs ${isDark ? "text-blue-200/40" : "text-slate-400"}`}>
-                        <MapPin size={11} />{r.location} · {r.time}
+                        <MapPin size={11} />{r.location} · {formatDistanceToNow(new Date(r.createdAt), { addSuffix: true })}
                       </span>
                     </div>
 
@@ -94,12 +104,14 @@ export default function CommunityPage() {
                         <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#F5B800] to-[#D4187E] flex items-center justify-center text-[10px] font-bold text-white">
                           {r.user[0]}
                         </div>
-                        {r.user} · {r.role}
-                        {r.verified && <CheckCircle size={11} className="text-green-500 ml-1" />}
+                        {r.user} {r.userId === localUserId && "(You)"} · {r.role}
+                        {r.isVerified && <CheckCircle size={11} className="text-green-500 ml-1">
+                          <title>Officially Verified</title>
+                        </CheckCircle>}
                       </div>
-                      <button onClick={() => handleVote(r.id)}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${votes[r.id] ? "bg-[#F5B800]/20 text-[#F5B800]" : isDark ? "border border-white/15 text-blue-200/50 hover:border-[#F5B800]/30 hover:text-[#F5B800]" : "border border-slate-200 text-slate-400 hover:border-[#F5B800]/30 hover:text-[#F5B800]"}`}>
-                        <ThumbsUp size={12} />{r.votes + (votes[r.id] ? 1 : 0)}
+                      <button onClick={() => toggleVote(r.id)}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${r.votes.includes(localUserId) ? "bg-[#F5B800]/20 text-[#F5B800]" : isDark ? "border border-white/15 text-blue-200/50 hover:border-[#F5B800]/30 hover:text-[#F5B800]" : "border border-slate-200 text-slate-400 hover:border-[#F5B800]/30 hover:text-[#F5B800]"}`}>
+                        <ThumbsUp size={12} />{r.votes.length}
                       </button>
                     </div>
                   </motion.div>
@@ -116,11 +128,11 @@ export default function CommunityPage() {
                   <TrendingUp size={16} className="text-[#F5B800]" />This Week
                 </h3>
                 {[
-                  { label: "Reports Submitted", value: "89", delta: "+12%" },
-                  { label: "Verified & Confirmed", value: "61", delta: "+8%" },
-                  { label: "Scams Prevented", value: "34", delta: "+21%" },
+                  { label: "Reports Submitted", value: statsThisWeek.reportsSubmitted, delta: "" },
+                  { label: "Verified & Confirmed", value: statsThisWeek.verifiedAndConfirmed, delta: "" },
+                  { label: "Scams Prevented", value: statsThisWeek.scamsPrevented, delta: "" },
                 ].map(({ label, value, delta }) => (
-                  <div key={label} className={`flex items-center justify-between py-2.5 border-b last:border-0 ${isDark ? "border-white/8" : "border-slate-100"}`}>
+                  <div key={label} className={`flex items-center justify-between py-2 border-b last:border-0 ${isDark ? "border-white/8" : "border-slate-100"}`}>
                     <span className="text-xs" style={{ color: "var(--tng-text-3)" }}>{label}</span>
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-bold" style={{ color: "var(--tng-text-1)" }}>{value}</span>
@@ -137,14 +149,14 @@ export default function CommunityPage() {
                   <Award size={16} className="text-[#F5B800]" />Top Contributors
                 </h3>
                 <div className="flex flex-col gap-3">
-                  {contributors.map((c, i) => (
+                  {topContributors.map((c, i) => (
                     <div key={c.name} className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#F5B800] to-[#D4187E] flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
                         {i + 1}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-bold" style={{ color: "var(--tng-text-1)" }}>{c.name}</p>
-                        <p className="text-[10px]" style={{ color: "var(--tng-text-3)" }}>{c.badge} · {c.verified} verified</p>
+                        <p className="text-[10px]" style={{ color: "var(--tng-text-3)" }}>{c.badge} · {c.reportsVerified} verified</p>
                       </div>
                     </div>
                   ))}
@@ -158,14 +170,25 @@ export default function CommunityPage() {
                 <p className="text-xs mb-4" style={{ color: "var(--tng-text-3)", fontFamily: "'Inter',sans-serif" }}>
                   Your report could protect hundreds of community members from a scam.
                 </p>
-                <button className="w-full py-2.5 rounded-xl border border-[#D4187E]/50 text-[#F090C0] font-semibold text-sm hover:bg-[#D4187E]/15 transition-colors">
+                <button onClick={() => setIsSubmitOpen(true)} className="w-full py-2.5 rounded-xl border border-[#D4187E]/50 text-[#F090C0] font-semibold text-sm hover:bg-[#D4187E]/15 transition-colors">
                   Submit a Report
                 </button>
+              </div>
+
+              {/* Dev only reset */}
+              <div className="p-4 rounded-2xl border border-red-500/20 bg-red-500/8 flex items-start gap-3">
+                <Trash2 size={16} className="text-red-400 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-xs font-bold" style={{ color: "var(--tng-text-1)" }}>Reset Data</p>
+                  <p className={`text-[10px] mt-0.5 ${isDark ? "text-blue-200/50" : "text-slate-500"}`}>For testing only. This clears all local community data.</p>
+                </div>
+                <button onClick={resetData} className="px-3 py-1 rounded-lg border border-red-500/40 text-red-400 text-xs font-semibold hover:bg-red-500/20 transition-colors">Reset</button>
               </div>
             </div>
           </div>
         </div>
       </div>
+      <SubmitReportDialog isOpen={isSubmitOpen} onOpenChange={setIsSubmitOpen} onSubmit={addReport} />
     </PageLayout>
   );
 }
