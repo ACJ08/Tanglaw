@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useState } from "react";
-import { CheckCircle2, Eye, EyeOff, KeyRound, Mail, Send, X } from "lucide-react";
+import { Eye, EyeOff, KeyRound, Mail, Send, X } from "lucide-react";
 import { useNavigate } from "react-router";
 import { useAuth } from "@/app/context/AuthContext";
 import { demoAccounts, demoAuthEnabled, type DemoUser } from "@/app/auth/demoAuth";
@@ -9,7 +9,7 @@ const roles = ["citizen", "student", "official", "teacher", "ngo", "humanitarian
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function AuthModal() {
-  const { modalOpen, modalMode, closeModal, openModal, signIn, signUp, resendVerificationEmail, resetPassword, user } = useAuth();
+  const { modalOpen, modalMode, closeModal, openModal, signIn, signUp, resetPassword, user } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,12 +28,6 @@ export function AuthModal() {
       setBusy(false);
     }
   }, [modalOpen]);
-
-  useEffect(() => {
-    if (modalOpen && modalMode === "verify" && !email && user?.email) {
-      setEmail(user.email);
-    }
-  }, [email, modalMode, modalOpen, user?.email]);
 
   if (!modalOpen) return null;
 
@@ -70,7 +64,7 @@ export function AuthModal() {
     if (modalMode === "signIn") {
       const { error: authError } = await signIn(email, password);
       if (authError) {
-        setError(authError.message.includes("Email not confirmed") ? "Verify your email before signing in. You can resend the verification email below." : "Email or password is incorrect. Please try again.");
+        setError("Email or password is incorrect. Please try again.");
       } else {
         navigate("/dashboard");
       }
@@ -82,21 +76,12 @@ export function AuthModal() {
       } else if (password !== confirm) {
         setError("Passwords do not match.");
       } else {
-        const { error: authError, requiresEmailConfirmation } = await signUp({ email, password, fullName, role });
+        const { error: authError } = await signUp({ email, password, fullName, role });
         if (authError) {
           setError(authError.message);
-        } else if (requiresEmailConfirmation) {
-          openModal("verify");
         } else {
           navigate("/dashboard");
         }
-      }
-    } else if (modalMode === "verify") {
-      const { error: authError } = await resendVerificationEmail(email);
-      if (authError) {
-        setError(authError.message);
-      } else {
-        setMessage("A new verification email has been sent. Check your inbox and spam folder.");
       }
     } else if (modalMode === "forgotPassword") {
       const { error: authError } = await resetPassword(email);
@@ -111,7 +96,7 @@ export function AuthModal() {
     setBusy(false);
   };
 
-  const title = modalMode === "signIn" ? "Welcome back" : modalMode === "verify" ? "Verify your email" : modalMode === "forgotPassword" ? "Reset your password" : "Create your account";
+  const title = modalMode === "signIn" ? "Welcome back" : modalMode === "forgotPassword" ? "Reset your password" : "Create your account";
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="auth-title">
@@ -122,13 +107,11 @@ export function AuthModal() {
             <button onClick={close} disabled={busy} className="absolute right-5 top-5 rounded-lg p-1 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800" aria-label="Close">
               <X size={20} />
             </button>
-            {modalMode === "verify" ? <CheckCircle2 className="mb-4 text-green-600" size={40} /> : <Mail className="mb-4 text-[#1B2F6E] dark:text-blue-300" size={36} />}
+            <Mail className="mb-4 text-[#1B2F6E] dark:text-blue-300" size={36} />
             <h2 id="auth-title" className="text-2xl font-extrabold text-slate-900 dark:text-white">{title}</h2>
           </div>
 
           <div className="flex-grow overflow-y-auto -mx-6 px-6 mt-4" style={{ maxHeight: "calc(100vh - 20rem)" }}>
-            {modalMode === "verify" && <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">Your email has not been verified yet. We sent a confirmation link to <strong>{email || user?.email || "your email address"}</strong>. Check your inbox and spam folder, then open the link. Keep this page open if you like, but you may return and sign in after verification.</p>}
-            {modalMode !== 'signIn' && modalMode === "signUp" && <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">You’ll need to verify your email before signing in.</p>}
             {modalMode !== 'signIn' && modalMode === "forgotPassword" && <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">We’ll send a secure link to reset your password.</p>}
             
             <div className={modalMode === 'signIn' ? 'grid lg:grid-cols-[1fr,1.5fr] xl:grid-cols-[1fr,2fr] lg:gap-x-12 items-start' : ''}>
@@ -159,16 +142,11 @@ export function AuthModal() {
                   )}
                   {error && <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-300" role="alert">{error}</p>}
                   {message && <p className="rounded-xl bg-green-50 px-3 py-2 text-sm text-green-700 dark:bg-green-900/30 dark:text-green-300" role="status">{message}</p>}
-                  <button disabled={busy} className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#F5B800] px-4 py-3 font-bold text-[#050E24] disabled:cursor-wait disabled:opacity-60 dark:hover:bg-amber-400">{busy ? "Please wait…" : modalMode === "verify" ? <><Send size={16}/>Resend verification email</> : modalMode === "forgotPassword" ? <><KeyRound size={16}/>Send reset link</> : modalMode === "signIn" ? "Sign in" : "Create account"}</button>
+                  <button disabled={busy} className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#F5B800] px-4 py-3 font-bold text-[#050E24] disabled:cursor-wait disabled:opacity-60 dark:hover:bg-amber-400">{busy ? "Please wait…" : modalMode === "forgotPassword" ? <><KeyRound size={16}/>Send reset link</> : modalMode === "signIn" ? "Sign in" : "Create account"}</button>
                 </form>
 
                 <div className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-sm font-semibold text-[#1B2F6E] dark:text-blue-300">
-                  {modalMode === "verify" ? (
-                    <>
-                      <button onClick={() => openModal("signUp")}>Change email address</button>
-                      <button onClick={() => openModal("signIn")}>Back to sign in</button>
-                    </>
-                  ) : modalMode === "signIn" ? (
+                  {modalMode === "signIn" ? (
                     <>
                       <button onClick={() => openModal("forgotPassword")}>Forgot password?</button>
                       <button onClick={() => openModal("signUp")}>Create an account</button>
