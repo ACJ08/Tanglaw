@@ -25,6 +25,7 @@ The majority of the application's design and implementation was led by **Anne Ca
 12. Future Improvements
 13. License
 14. Acknowledgments
+15. FE-05 Accessibility Playground
 
 ---
 
@@ -234,6 +235,12 @@ You can now open `http://localhost:5173` in your browser.
 | `npm run preview`| Previews the production build locally.                 |
 | `npm run test`   | Runs unit tests with Vitest.                           |
 | `npm run typecheck`| Checks the project for TypeScript errors.              |
+| `npm run dev:playground` | Starts the standalone FE-05 manual component playground. But needs to type manually the http://localhost:5173/playground/ to open the playground |
+| `npm run build:playground` | Builds the standalone FE-05 playground. |
+
+## FE-05 Accessibility Playground
+
+`playground/` contains small, manual React + TypeScript examples of an accessible modal dialog, tabs, and disclosure. It is an educational accessibility exercise, separate from Tanglaw's production routes and components. The application continues to use its existing shadcn/ui wrappers around Radix UI primitives; see `NOTES.md` for the implementation comparison and limitations of the manual examples.
 
 ## Limitations
 

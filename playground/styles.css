@@ -1,0 +1,17 @@
+:root { color: #102a43; background: #fffaf0; font-family: Inter, system-ui, sans-serif; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+button, input { font: inherit; }
+button { cursor: pointer; }
+button:focus-visible, input:focus-visible { outline: 3px solid #b45309; outline-offset: 3px; }
+.playground-shell { width: min(100% - 2rem, 48rem); margin: 0 auto; padding: 3rem 0; }
+h1, h2, h3, p { margin-top: 0; }
+h1 { font-size: clamp(2rem, 5vw, 3rem); } .eyebrow { color: #9a3412; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.demo-card { margin-top: 1.5rem; padding: 1.5rem; border: 1px solid #d6c7af; border-radius: .75rem; background: #fff; box-shadow: 0 4px 14px rgb(69 44 14 / .08); }
+.primary-button, .dialog-actions button, .disclosure-button, .tab-button { min-height: 2.75rem; border: 1px solid #7c2d12; border-radius: .4rem; padding: .55rem .85rem; background: #fff; color: #431407; font-weight: 650; }
+.primary-button { background: #7c2d12; color: #fff; }.primary-button:hover { background: #9a3412; }
+.dialog-backdrop { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 1rem; background: rgb(15 23 42 / .68); }
+.dialog { width: min(100%, 32rem); display: grid; gap: 1rem; padding: 1.5rem; border-radius: .75rem; background: #fffaf0; box-shadow: 0 20px 50px rgb(0 0 0 / .35); }
+.dialog input { width: 100%; min-height: 2.75rem; border: 1px solid #94745a; border-radius: .4rem; padding: .55rem; background: #fff; }.checkbox-label { display: flex; gap: .5rem; align-items: center; }.dialog-actions { display: flex; flex-wrap: wrap; gap: .75rem; }
+.tab-list { display: flex; flex-wrap: wrap; gap: .5rem; border-bottom: 1px solid #d6c7af; }.tab-button[aria-selected="true"] { background: #7c2d12; color: #fff; }.tab-panel { margin-top: 1rem; padding: 1rem; border-left: .3rem solid #b45309; background: #fffbeb; }
+.disclosure-button { width: 100%; display: flex; justify-content: space-between; text-align: left; }.disclosure-content { padding: 1rem; border: 1px solid #d6c7af; border-top: 0; background: #fffbeb; line-height: 1.6; }
