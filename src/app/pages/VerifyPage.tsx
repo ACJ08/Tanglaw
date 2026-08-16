@@ -14,18 +14,10 @@ import successImg from "@/imports/11__Success.png";
 import { isSupabaseConfigured, supabase } from "@/supabaseClient";
 import { useAuth } from "@/app/context/AuthContext";
 import { toast } from "sonner";
+import { analyzeLocally, normalizeConfidence, type ConfidenceSource, type VerificationResult } from "@/app/lib/verification";
 
 type VerifyStatus = "idle" | "analyzing" | "result";
-type Verdict = "safe" | "false" | "misleading" | "unverified";
-
-interface AnalysisResult {
-  verdict: Verdict;
-  confidence: number;
-  summary: string;
-  indicators: { icon: typeof Link2; label: string; severity: "high" | "medium" | "low"; detail: string }[];
-  sources: { name: string; url: string; credibility: "high" | "medium" }[];
-  recommendation: string;
-}
+type AnalysisResult = Omit<VerificationResult, "indicators"> & { indicators: (VerificationResult["indicators"][number] & { icon: typeof Link2 })[] };
 
 const sampleTexts = [
   { label: "Scam text example", text: "URGENT: Your GCash account is SUSPENDED! Click here immediately to verify: bit.ly/gcash-verify or lose P50,000 government aid. Call 09XX-XXX-XXXX now. LIMITED TIME ONLY!" },
@@ -33,7 +25,7 @@ const sampleTexts = [
   { label: "Election misinformation", text: "EXCLUSIVE: COMELEC caught manipulating votes in 3 provinces. Video proof leaked. Share before they delete! The mainstream media won't report this." },
 ];
 
-const mockResults: Record<string, AnalysisResult> = {
+/* const mockResults: Record<string, AnalysisResult> = {
   scam: {
     verdict: "false",
     confidence: 97,
@@ -83,7 +75,7 @@ const mockResults: Record<string, AnalysisResult> = {
     ],
     recommendation: "Do not share unverified election claims. Verify through COMELEC's official transparency servers or accredited citizen arms like PPCRV.",
   },
-};
+}; */
 
 const verdictConfig = {
   safe: { label: "Verified Safe", color: "#22C55E", bg: "bg-green-500/15", border: "border-green-500/30", icon: CheckCircle },
@@ -92,7 +84,7 @@ const verdictConfig = {
   unverified: { label: "UNVERIFIED", color: "#8B5CF6", bg: "bg-violet-500/15", border: "border-violet-500/30", icon: Info },
 };
 
-const severityColor = { high: "#EF4444", medium: "#F59E0B", low: "#22C55E" };
+const severityColor = { critical: "#B91C1C", high: "#EF4444", medium: "#F59E0B", low: "#22C55E" };
 
 export default function VerifyPage() {
   const { isDark } = useTheme();
@@ -101,46 +93,33 @@ export default function VerifyPage() {
   const [status, setStatus] = useState<VerifyStatus>("idle");
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [activeTab, setActiveTab] = useState<"text" | "url">("text");
-  const [verificationSource, setVerificationSource] = useState<"ai" | "mock_fallback">("mock_fallback");
+  const [verificationSource, setVerificationSource] = useState<ConfidenceSource>("local");
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const detect = (text: string): AnalysisResult => {
-    const t = text.toLowerCase();
-    if (t.includes("gcash") || t.includes("suspended") || t.includes("government aid")) return mockResults.scam;
-    if (t.includes("lemon") || t.includes("covid") || t.includes("cure")) return mockResults.health;
-    if (t.includes("comelec") || t.includes("votes") || t.includes("election")) return mockResults.election;
-    return {
-      verdict: "unverified",
-      confidence: 52,
-      summary: "Tanglaw could not find sufficient matching sources to verify or disprove this claim in the current local database. This does not mean the claim is true or false.",
-      indicators: [{ icon: Info, label: "Insufficient Evidence", severity: "low", detail: "No matching verified or debunked sources found in the local database." }],
-      sources: [],
-      recommendation: "Treat this claim with caution. Visit your nearest Truth Hub or check back when connectivity allows a full online cross-reference.",
-    };
-  };
+  const detect = (text: string): AnalysisResult => toDisplayResult(analyzeLocally(text));
 
-  const toDisplayResult = (value: Omit<AnalysisResult, "indicators"> & { indicators: { label: string; severity: "high" | "medium" | "low"; detail: string }[] }): AnalysisResult => ({
-    ...value,
-    indicators: value.indicators.map((indicator) => ({ ...indicator, icon: indicator.severity === "high" ? AlertTriangle : indicator.severity === "medium" ? Eye : Info })),
+  const toDisplayResult = (value: VerificationResult): AnalysisResult => ({
+    ...value, confidence: normalizeConfidence(value.confidence),
+    indicators: value.indicators.map((indicator) => ({ ...indicator, icon: indicator.severity === "critical" || indicator.severity === "high" ? AlertTriangle : indicator.severity === "medium" ? Eye : Info })),
   });
 
   const handleVerify = async () => {
-    if (!inputText.trim()) return;
+    if (!inputText.trim()) { toast.error("Paste text or a URL to verify first."); return; }
     setStatus("analyzing");
     setResult(null);
     const started = Date.now();
     try {
       const response = await fetch("/api/verify", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: inputText, type: activeTab }) });
       if (!response.ok) throw new Error((await response.json() as { error?: string }).error ?? "Online verification failed");
-      const data = await response.json() as { result: Omit<AnalysisResult, "indicators"> & { indicators: { label: string; severity: "high" | "medium" | "low"; detail: string }[] } };
+      const data = await response.json() as { result: VerificationResult };
       const remaining = Math.max(0, 900 - (Date.now() - started));
-      window.setTimeout(() => { setVerificationSource("ai"); setIsSaved(false); setResult(toDisplayResult(data.result)); setStatus("result"); }, remaining);
+      window.setTimeout(() => { setVerificationSource(data.result.confidenceSource); setIsSaved(false); setResult(toDisplayResult(data.result)); setStatus("result"); }, remaining);
     } catch (error) {
-      // detect(), mockResults, and sampleTexts remain the seamless offline/demo fallback.
       const remaining = Math.max(0, 900 - (Date.now() - started));
-      window.setTimeout(() => { setVerificationSource("mock_fallback"); setIsSaved(false); setResult(detect(inputText)); setStatus("result"); }, remaining);
+      window.setTimeout(() => { setVerificationSource("local"); setIsSaved(false); setResult(detect(inputText)); setStatus("result"); }, remaining);
+      toast.error("Online AI was unavailable. Liyab used local risk signals instead.");
       if (activeTab === "url" && error instanceof Error && !/unavailable/i.test(error.message)) window.setTimeout(() => window.alert(error.message), remaining);
     }
   };
@@ -153,7 +132,7 @@ export default function VerifyPage() {
     if (file.size > 10 * 1024 * 1024) { toast.error("Image uploads must be 10 MB or smaller."); event.target.value = ""; return; }
     setStatus("analyzing"); setResult(null);
     let extracted = inputText;
-    try { const { data } = await recognize(file, "eng"); extracted = data.text.trim(); if (!extracted) throw new Error("No readable text was found in this image."); setInputText(extracted); const response = await fetch("/api/verify", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: extracted, type: "text" }) }); if (!response.ok) throw new Error((await response.json() as { error?: string }).error ?? "Image analysis is unavailable."); const payload = await response.json() as { result: Omit<AnalysisResult, "indicators"> & { indicators: { label: string; severity: "high" | "medium" | "low"; detail: string }[] } }; setVerificationSource("ai"); setIsSaved(false); setResult(toDisplayResult(payload.result)); } catch (error) { setVerificationSource("mock_fallback"); setIsSaved(false); setResult(detect(extracted)); toast.error(error instanceof Error ? `${error.message} Offline analysis was used instead.` : "Image analysis failed. Offline analysis was used instead."); } finally { setStatus("result"); event.target.value = ""; }
+    try { const { data } = await recognize(file, "eng"); extracted = data.text.trim(); if (!extracted) throw new Error("No readable text was found in this image."); setInputText(extracted); const response = await fetch("/api/verify", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: extracted, type: "text" }) }); if (!response.ok) throw new Error((await response.json() as { error?: string }).error ?? "Image analysis is unavailable."); const payload = await response.json() as { result: VerificationResult }; setVerificationSource(payload.result.confidenceSource); setIsSaved(false); setResult(toDisplayResult(payload.result)); } catch (error) { setVerificationSource("local"); setIsSaved(false); setResult(detect(extracted)); toast.error(error instanceof Error ? `${error.message} Offline analysis was used instead.` : "Image analysis failed. Offline analysis was used instead."); } finally { setStatus("result"); event.target.value = ""; }
   };
 
   const saveHistory = async () => {
